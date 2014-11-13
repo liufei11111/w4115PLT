@@ -14,7 +14,9 @@
 %nonassoc NOELSE
 %nonassoc ELSE COMMA
 %right ASSIGN
-%left EQ NEQ AND OR
+%left OR
+%left AND
+%left EQ NEQ
 %left LT GT LEQ GEQ
 %left PLUS MINUS MPLUS MMINUS
 %left TIMES DIVIDE MTIMES MDIVIDE
@@ -33,15 +35,14 @@ program:
 */
 program:
    { [], [] }
- | program vdecl {($2 :: fst $1), snd $1 }
+ | program stmt {($2 :: fst $1), snd $1 }
  | program fdecl { fst $1, ($2 :: snd $1) }
 
 fdecl:
-   retval formal_list RPAREN LBRACE vdecl_list stmt_list RBRACE
+   retval formal_list RPAREN LBRACE stmt_list RBRACE
      { { func_name =  $1.vname;
-         formals = $2; 
-         locals = List.rev $5;
-         body = List.rev $6;
+         formals = List.rev $2; 
+         body = List.rev $5;
          ret =  $1.vtype
          } }
 
@@ -60,22 +61,31 @@ retval:
   | formal_list   { List.rev $1 }
 */
 formal_list:
-    tdecl                   { [$1] }
-  | formal_list COMMA tdecl { $3 :: $1 }
+    formal                   { [$1] }
+  | formal_list COMMA formal { $3 :: $1 }
+
+formal:
+		tdecl      { $1 }
+	| MATRIX ID  { {vtype=Matrix; vname=$2}  }
+
 vdecl_list:
     /* nothing */    { [] }
   | vdecl_list vdecl { $2 :: $1 }
+
 vdecl:
-   | tdecl SEMI { $1 }
+    tdecl SEMI { $1 }
+
 tdecl:
-     INT ID { {vname = $2; vtype = Int}  }
-        |FLOAT ID  { {vname = $2; vtype = Float}  }
-        |VOID ID  { {vname = $2; vtype = Void}  }
-				|MATRIX ID  { {vname = $2; vtype = Matrix}  }
-				| OPTION ID  { {vname = $2; vtype = Option}  }
-				| STRUCTURE ID  { {vname = $2; vtype = Structure}  }
-				| BOOLEAN ID  { {vname = $2; vtype = Boolean}  }
-				| STRING ID  { {vname = $2; vtype = String}  }
+    INT ID { {vname = $2; vtype = Int}  }
+	| FLOAT ID  { {vname = $2; vtype = Float}  }
+	| VOID ID  { {vname = $2; vtype = Void}  }
+	| OPTION ID  { {vname = $2; vtype = Option}  }
+	| STRUCTURE ID  { {vname = $2; vtype = Structure}  }
+	| BOOLEAN ID  { {vname = $2; vtype = Boolean}  }
+	| STRING ID  { {vname = $2; vtype = String}  }
+
+mdecl:
+		MATRIX ID LPAREN INT_LIT COMMA INT_LIT RPAREN { {mname = $2; mtype = Matrix; mrow = $4; mcol = $6}  }	
 
 stmt_list:
     /* nothing */  { [] }
@@ -91,6 +101,8 @@ stmt:
   | FOR LPAREN expr_opt SEMI b_expr SEMI expr_opt RPAREN stmt
      { For($3, $5, $7, $9) }
   | WHILE LPAREN b_expr RPAREN stmt { While($3, $5) }
+	| tdecl SEMI { Vardec($1) }
+	| mdecl SEMI { Matdec($1) }
 
 expr_opt:
     /* nothing */ { Noexpr }
@@ -112,7 +124,8 @@ expr:
   | expr ASSIGN expr   { VarAssign($1, $3) }
 	| ID LSQUARE expr RSQUARE LSQUARE  expr RSQUARE ASSIGN expr { ElemAssign($1, $3, $6, $9) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
-  | LPAREN expr RPAREN { $2 }
+  | LPAREN expr RPAREN { Precedence_expr($2) }
+
 b_expr:
    expr EQ     expr { Bool_expr1($1, Eq, $3) }
   | expr NEQ    expr { Bool_expr1($1, Neq,   $3) }
@@ -122,6 +135,7 @@ b_expr:
   | expr GEQ    expr { Bool_expr1($1, Geq,   $3) }
 	| b_expr AND    b_expr { Bool_expr2($1, And,   $3) }
 	| b_expr OR    b_expr { Bool_expr2($1, Or,   $3) }
+	| LPAREN b_expr RPAREN { Precedence_bool_expr($2) }
 
 
 actuals_opt:
