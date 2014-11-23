@@ -108,6 +108,7 @@ stmt:
 	| tdecl SEMI { Vardec($1) }
 	| mdecl SEMI { Matdec($1) }
 	| STRUCTURE ID ASSIGN LBRACE struct_arg_list RBRACE SEMI {Structdec($2, $5)}
+	| OPTION ID ASSIGN LBRACE struct_arg_list RBRACE SEMI {Optiondec($2, $5)}
 
 expr_opt:
     /* nothing */ { Noexpr }
@@ -130,6 +131,7 @@ expr:
 	| ID LSQUARE expr RSQUARE LSQUARE  expr RSQUARE ASSIGN expr { ElemAssign($1, $3, $6, $9) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { Precedence_expr($2) }
+	| ID ARROW ID {Struct_element($1, $3)}
 
 b_expr:
    expr EQ     expr { Bool_expr1($1, Eq, $3) }

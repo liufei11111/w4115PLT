@@ -38,6 +38,7 @@ type expr =
 	| ElemAssign of string * expr * expr * expr	(* IDENTIFIER LSQUARE expr RSQUARE LSQUARE expr RSQUARE ASSIGN expr SEMICOLON *)
 	(*| MatrixCreate of expr * expr	(* dataType ID LBRACE expr COMMA expr RBRACE SEMICOLON*)	*)
 	| Precedence_expr of expr
+	| Struct_element of string * string
 	|	Noexpr
 
 type b_expr = 
@@ -55,6 +56,7 @@ type stmt =
 	| Vardec of var_dec
 	| Matdec of mat_dec
 	| Structdec of string * expr list
+	| Optiondec of string * expr list
 
 type func_dec = {
 	ret : dataType;
@@ -107,6 +109,7 @@ let rec string_of_expr = function
   | Noexpr -> "void"
 	| Boolean(s) -> s
 	| Precedence_expr(e) -> "( " ^ string_of_expr e ^ " )"
+	| Struct_element(struct_id, element_id) -> struct_id ^ "->" ^ element_id
 	| _ -> "space"
 
 
@@ -139,7 +142,9 @@ let rec string_of_stmt = function
 	| Vardec(vdecl) -> string_of_vdecl vdecl ^ ";\n"
 	| Matdec(mdecl) -> string_of_mdecl mdecl ^ ";\n"
 	| Structdec (id, exprList) -> "Structure " ^ id ^ " = {" ^ String.concat ", " (List.map string_of_expr (List.rev exprList)) ^ "};\n"
-  
+	| Optiondec (id, exprList) -> "Option " ^ id ^ " = {" ^ String.concat ", " (List.map string_of_expr (List.rev exprList)) ^ "};\n"
+ 
+	 
 let string_of_fdecl fdecl =
  string_of_dataType fdecl.ret ^" " ^ fdecl.func_name ^ "(" 
 ^ String.concat ", " (List.map string_of_vdecl fdecl.formals) ^ ")\n{\n" ^

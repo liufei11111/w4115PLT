@@ -7,7 +7,9 @@ Int main(Int argc, String argv) {
 	Structure s = { a = 1, b = 2, c = 3 };
     Matrix m(1,1); 
     m3 = (m +. m2) * 4;
-    Option o;
+    Option o = {a = 1};
+    o -> a;
+    argc = 	s -> a;
     if (i == 2) {
 		return argc;
 	} else {
