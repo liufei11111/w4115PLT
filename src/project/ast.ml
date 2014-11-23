@@ -54,6 +54,7 @@ type stmt =
 	| Return of expr
 	| Vardec of var_dec
 	| Matdec of mat_dec
+	| Structdec of string * expr list
 
 type func_dec = {
 	ret : dataType;
@@ -137,6 +138,7 @@ let rec string_of_stmt = function
   | While(e, s) -> "while (" ^ string_of_b_expr e ^ ") " ^ string_of_stmt s
 	| Vardec(vdecl) -> string_of_vdecl vdecl ^ ";\n"
 	| Matdec(mdecl) -> string_of_mdecl mdecl ^ ";\n"
+	| Structdec (id, exprList) -> "Structure " ^ id ^ " = {" ^ String.concat ", " (List.map string_of_expr (List.rev exprList)) ^ "};\n"
   
 let string_of_fdecl fdecl =
  string_of_dataType fdecl.ret ^" " ^ fdecl.func_name ^ "(" 

@@ -91,6 +91,10 @@ stmt_list:
     /* nothing */  { [] }
   | stmt_list stmt { $2 :: $1 }
 
+struct_arg_list:
+		expr	{ [$1] }
+	| struct_arg_list COMMA expr {$3 :: $1}
+
 stmt:
     expr SEMI { Expr($1) }
   | RETURN expr SEMI { Return($2) }
@@ -103,6 +107,7 @@ stmt:
   | WHILE LPAREN b_expr RPAREN stmt { While($3, $5) }
 	| tdecl SEMI { Vardec($1) }
 	| mdecl SEMI { Matdec($1) }
+	| STRUCTURE ID ASSIGN LBRACE struct_arg_list RBRACE SEMI {Structdec($2, $5)}
 
 expr_opt:
     /* nothing */ { Noexpr }
