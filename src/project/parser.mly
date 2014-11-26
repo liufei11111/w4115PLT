@@ -128,7 +128,7 @@ expr:
   | expr MTIMES  expr { MatBinary_op($1, MTime,  $3) }
   | expr MDIVIDE expr { MatBinary_op($1, MDivide,   $3) }
   | expr ASSIGN expr   { VarAssign($1, $3) }
-	| ID LSQUARE expr RSQUARE LSQUARE  expr RSQUARE ASSIGN expr { ElemAssign($1, $3, $6, $9) }
+	| ID LSQUARE expr RSQUARE LSQUARE  expr RSQUARE  { Matrix_element($1, $3, $6) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { Precedence_expr($2) }
 	| ID ARROW ID {Struct_element($1, $3)}

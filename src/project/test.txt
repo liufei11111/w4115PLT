@@ -10,7 +10,7 @@ Int main(Int argc, String argv) {
     Option o = {a = 1};
     o -> a;
     argc = 	s -> a;
-    if (i == 2) {
+    if (i == 2 || i) {
 		return argc;
 	} else {
 		return i+1;
@@ -25,3 +25,4 @@ Int main(Int argc, String argv) {
 Void main2(Int argc2, Matrix m) {
 	main(a, "str");
 }
+

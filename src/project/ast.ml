@@ -34,7 +34,7 @@ type expr =
 	| Boolean of string
 	| Call of string * expr list (*ComputeSomething(v1,v2,v3);*)
 	| VarAssign of expr * expr			(* IDENTIFIER ASSIGN expr SEMICOLON *)
-	| ElemAssign of string * expr * expr * expr	(* IDENTIFIER LSQUARE expr RSQUARE LSQUARE expr RSQUARE ASSIGN expr SEMICOLON *)
+	| Matrix_element of string * expr * expr	(* IDENTIFIER LSQUARE expr RSQUARE LSQUARE expr RSQUARE*)
 	(*| MatrixCreate of expr * expr	(* dataType ID LBRACE expr COMMA expr RBRACE SEMICOLON*)	*)
 	| Precedence_expr of expr
 	| Struct_element of string * string
@@ -114,7 +114,7 @@ let rec string_of_expr = function
 			) ^ " " ^
       string_of_expr e2
   | VarAssign(v, e) -> string_of_expr v ^ " = " ^ string_of_expr e
-	| ElemAssign(v,e1,e2,e3)->v ^"["^ string_of_expr e1^" , "^ string_of_expr e2^"] = "^ string_of_expr e2^"\n"
+	| Matrix_element (v,e1,e2)->v ^"["^ string_of_expr e1^" , "^ string_of_expr e2^"] "
   | Call(f, el) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> "void"
 	| Boolean(s) -> s
