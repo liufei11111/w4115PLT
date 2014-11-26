@@ -100,11 +100,11 @@ stmt:
   | RETURN expr SEMI { Return($2) }
 	| RETURN SEMI {Return(Noexpr)}
   | LBRACE stmt_list RBRACE { Block(List.rev $2) }
-  | IF LPAREN b_expr RPAREN stmt %prec NOELSE { If($3, $5, Block([])) }
-  | IF LPAREN b_expr RPAREN stmt ELSE stmt    { If($3, $5, $7) }
-  | FOR LPAREN expr_opt SEMI b_expr SEMI expr_opt RPAREN stmt
+  | IF LPAREN expr RPAREN stmt %prec NOELSE { If($3, $5, Block([])) }
+  | IF LPAREN expr RPAREN stmt ELSE stmt    { If($3, $5, $7) }
+  | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN stmt
      { For($3, $5, $7, $9) }
-  | WHILE LPAREN b_expr RPAREN stmt { While($3, $5) }
+  | WHILE LPAREN expr RPAREN stmt { While($3, $5) }
 	| tdecl SEMI { Vardec($1) }
 	| mdecl SEMI { Matdec($1) }
 	| STRUCTURE ID ASSIGN LBRACE struct_arg_list RBRACE SEMI {Structdec($2, $5)}
@@ -132,17 +132,15 @@ expr:
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { Precedence_expr($2) }
 	| ID ARROW ID {Struct_element($1, $3)}
-
-b_expr:
-   expr EQ     expr { Bool_expr1($1, Eq, $3) }
-  | expr NEQ    expr { Bool_expr1($1, Neq,   $3) }
-  | expr LT     expr { Bool_expr1($1, Lt,  $3) }
-  | expr LEQ    expr { Bool_expr1($1, Leq,   $3) }
-  | expr GT     expr { Bool_expr1($1, Gt,  $3) }
-  | expr GEQ    expr { Bool_expr1($1, Geq,   $3) }
-	| b_expr AND    b_expr { Bool_expr2($1, And,   $3) }
-	| b_expr OR    b_expr { Bool_expr2($1, Or,   $3) }
-	| LPAREN b_expr RPAREN { Precedence_bool_expr($2) }
+/* b_expr: */
+  | expr EQ     expr { Binary_op($1, Eq, $3) }
+  | expr NEQ    expr { Binary_op($1, Neq,   $3) }
+  | expr LT     expr { Binary_op($1, Lt,  $3) }
+  | expr LEQ    expr { Binary_op($1, Leq,   $3) }
+  | expr GT     expr { Binary_op($1, Gt,  $3) }
+  | expr GEQ    expr { Binary_op($1, Geq,   $3) }
+	| expr AND    expr { Binary_op($1, And,   $3) }
+	| expr OR     expr { Binary_op($1, Or,   $3) }
 
 
 actuals_opt:

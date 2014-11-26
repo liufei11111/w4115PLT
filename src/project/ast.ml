@@ -20,10 +20,9 @@ type mat_dec = {
 	mcol : int;
 }
 
-type bin_op = Add | Sub | Times | Divide
+type bin_op = Add | Sub | Times | Divide| And | Or | Eq | Neq | Lt | Gt | Leq | Geq
 type mat_op = MTime | MDivide |MAdd | MSub
-type bool_op1 = Eq | Neq | Lt | Gt | Leq | Geq
-type bool_op2 =  And | Or
+
 
 type expr =
 	 Binary_op of expr * bin_op * expr
@@ -39,19 +38,19 @@ type expr =
 	(*| MatrixCreate of expr * expr	(* dataType ID LBRACE expr COMMA expr RBRACE SEMICOLON*)	*)
 	| Precedence_expr of expr
 	| Struct_element of string * string
+	 (*type b_expr = 
+	| Bool_expr1 of expr * bool_op1 * expr
+	| Bool_expr2 of b_expr * bool_op2 * b_expr
+	| Precedence_bool_expr of b_expr*)
 	|	Noexpr
 
-type b_expr = 
-	  Bool_expr1 of expr * bool_op1 * expr
-	| Bool_expr2 of b_expr * bool_op2 * b_expr
-	| Precedence_bool_expr of b_expr
 
 type stmt =
 	  Block of stmt list					(* LBRACE Statement_list RBRACE *)
 	| Expr of expr							(* expr SEMICOLON *)
-	| If of b_expr * stmt * stmt						(* IF LPAREN expr RPAREN Block *)
-	| For of expr * b_expr * expr * stmt		(* FOR LPAREN expr SEMICOLON expr SEMICOLON expr Statement SEMICOLON *)
-	| While of b_expr * stmt					(* WHILE LPAREN expr RPAREN Statement SEMICOLON *)
+	| If of expr * stmt * stmt						(* IF LPAREN expr RPAREN Block *)
+	| For of expr * expr * expr * stmt		(* FOR LPAREN expr SEMICOLON expr SEMICOLON expr Statement SEMICOLON *)
+	| While of expr * stmt					(* WHILE LPAREN expr RPAREN Statement SEMICOLON *)
 	| Return of expr
 	| Vardec of var_dec
 	| Matdec of mat_dec
@@ -91,10 +90,21 @@ let rec string_of_expr = function
 	| String_lit(l) -> "\"" ^ l ^ "\""
   | Id(s) -> s
 	(*| MatrixCreate (a,b)-> " "^ "[ "^(string_of_expr a)^" , "^(string_of_expr b)^" ]\n"*)
+	(*|  | expr EQ     expr { Binary_op($1, Eq, $3) }
+  | expr NEQ    expr { Binary_op($1, Neq,   $3) }
+  | expr LT     expr { Binary_op($1, Lt,  $3) }
+  | expr LEQ    expr { Binary_op($1, Leq,   $3) }
+  | expr GT     expr { Binary_op($1, Gt,  $3) }
+  | expr GEQ    expr { Binary_op($1, Geq,   $3) }
+	| expr AND    expr { Binary_op($1, And,   $3) }
+	| expr OR     expr { Binary_op($1, Or,   $3) } *)
   | Binary_op(e1, o, e2) ->
       string_of_expr e1 ^ " " ^
       (match o with
-			Add -> "+" | Sub -> "-" | Times -> "*" | Divide -> "/"
+			| (*And | Or | Eq | Neq | Lt | Gt | Leq | Geq*)
+			Add -> "+" | Sub -> "-" | Times -> "*" | Divide -> "/" | Eq -> "=="
+			| Neq -> "!=" 			| Lt -> "<" | Leq -> "<=" | Gt -> ">" | Geq -> ">=" 
+			| And -> "&&" | Or -> "||" 
       ) ^ " " ^
       string_of_expr e2
 	| MatBinary_op(e1, o, e2) ->
@@ -113,7 +123,7 @@ let rec string_of_expr = function
 	| _ -> "space"
 
 
-let rec string_of_b_expr = function 
+(*let rec string_of_b_expr = function 
 	 Bool_expr1(e1, o, e2) ->
       string_of_expr e1 ^ " " ^
       (match o with
@@ -127,18 +137,18 @@ let rec string_of_b_expr = function
       ) ^ " " ^
       string_of_b_expr e2
 	| Precedence_bool_expr(e) -> "( " ^ string_of_b_expr e ^ " )"
-
+*)
 let rec string_of_stmt = function
     Block(stmts) -> "{\n  " ^ String.concat "  " (List.map string_of_stmt stmts) ^ "}\n"
 	| Expr(expr) -> string_of_expr expr ^ ";\n"
   | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n"
-  | If(e, s, Block([])) -> "if (" ^ string_of_b_expr e ^ ")\n" ^ string_of_stmt s
-  | If(e, s1, s2) ->  "if (" ^ string_of_b_expr e ^ ") " ^
+  | If(e, s, Block([])) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s
+  | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ") " ^
       string_of_stmt s1 ^ "else " ^ string_of_stmt s2
   | For(e1, e2, e3, s) ->
-      "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_b_expr e2 ^ " ; " ^
+      "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
       string_of_expr e3  ^ ") " ^ string_of_stmt s
-  | While(e, s) -> "while (" ^ string_of_b_expr e ^ ") " ^ string_of_stmt s
+  | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
 	| Vardec(vdecl) -> string_of_vdecl vdecl ^ ";\n"
 	| Matdec(mdecl) -> string_of_mdecl mdecl ^ ";\n"
 	| Structdec (id, exprList) -> "Structure " ^ id ^ " = {" ^ String.concat ", " (List.map string_of_expr (List.rev exprList)) ^ "};\n"
