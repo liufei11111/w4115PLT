@@ -86,10 +86,8 @@ let translate (globals, functions) =
     [Jsr (StringMap.find "main" function_indexes); Hlt]
   with Not_found -> raise (Failure ("no \"main\" function"))
   in
-    
   (* Compile the functions *)
   let func_bodies = entry_function :: List.map (translate env) functions in
-
   (* Calculate function entry points by adding their lengths *)
   let (fun_offset_list, _) = List.fold_left
       (fun (l,i) f -> (i :: l, (i + List.length f))) ([],0) func_bodies in

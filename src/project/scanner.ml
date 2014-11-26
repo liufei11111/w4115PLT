@@ -1866,7 +1866,7 @@ let
 
   | 49 ->
 # 62 "scanner.mll"
-      ( raise (Failure("illegal character " )) )
+     ( raise (Failure("illegal character " )) )
 # 1871 "scanner.ml"
 
   | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf; __ocaml_lex_token_rec lexbuf __ocaml_lex_state
