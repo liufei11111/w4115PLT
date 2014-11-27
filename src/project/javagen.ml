@@ -21,7 +21,6 @@ expr_t =
   | Precedence_expr_t of expr_t * dataType
 	| Struct_element_t of string * string * dataType
   | Noexpr_t of dataType
-
 **)
 let type_of (ae : Sast.expr_t) : Ast.dataType =
   match ae with
@@ -52,10 +51,10 @@ let java_from_type (ty: Ast.dataType) : string =
       | Int -> "int" 
       | Float -> "float"
 			| String -> "string"
-			| Matrix -> "matrix"
-			| Option -> "option"
-			| Structure -> "structure"
-			| Boolean -> "bool"
+			| Matrix -> "Matrix"
+			| Option -> "Option"
+			| Structure -> "Structure"
+			| Boolean -> "boolean"
 			| Void -> "void"
 
 
@@ -99,19 +98,36 @@ and writeStmtList stmtList =
 	| Optiondec_t of string * expr_t list * dataType
 	*)
 and gen_stmt = function
-		Block_t(stmtList) -> writeStmtList stmtList
-  | AReturn(exp, _) -> writeReturnStmt exp
-  | AIf(condTupleList, elseStmt) -> writeIfStmt condTupleList elseStmt
-  | AFor(asnTuple, cond, incrTuple, stmtList) -> 
-      writeForLoop asnTuple cond incrTuple stmtList
-  | AWhile(cond, stmtList) -> writeWhileLoop cond stmtList
-  | AAssign((expr1 , expr2)) -> writeAssign expr1 expr2
-  | AFuncCallStmt(funcNameExpr, paramsListExpr) -> 
-      writeFuncCallStmt funcNameExpr paramsListExpr
-
+		Block_t(stmtList) -> "\n{\n"^writeStmtList stmtList^"\n}\n"
+	| Expr_t(expr_t) -> gen_expr expr_t ^";\n"
+  | If_t ( expr_t , stmt_t_If , stmt_t_Else) -> "if ("^gen_expr expr_t^") {"^ gen_stmt stmt_t_If
+	^"}else{" ^ gen_stmt stmt_t_Else^"}\n"
+  | For_t(expr_t1 , expr_t2 , expr_t3 , stmt_t)-> 
+      "for (" ^ gen_expr expr_t1 ^ "," ^ gen_expr expr_t2^","
+			^ gen_expr expr_t3^")\n{\n" ^ gen_stmt stmt_t^"\n}\n"
+  | While_t ( expr_t , stmt_t ) -> "while("^gen_expr expr_t^")\n{\n"^gen_stmt stmt_t^"\n}\n"
+	| Return_t (expr_t)  -> "return "^gen_expr expr_t^";\n"
+	| Vardec_t (var_dec , dataType) ->  java_from_type var_dec.vtype ^" "^var_dec.vname^";\n"
+  | Matdec_t (mat_dec , dataType) -> java_from_type mat_dec.mtype ^" "^mat_dec.mname^" = new "
+	 ^java_from_type mat_dec.mtype^"("^mat_dec.mrow^","^mat_dec.mcol^");\n"
+	| Structdec_t (structName , exprList) -> java_from_type Structure ^" "^mat_dec.mname^" = new "
+	 ^java_from_type Structure^"();\n"^ writeExprList exprList^"\n"
+	(*type expr_t =
+   Binary_op_t of expr_t * bin_op * expr_t * dataType
+  | MatBinary_op_t of expr_t * mat_op * expr_t * dataType
+  | Id_t of string * dataType
+  | Float_lit_t of float * dataType
+  | Int_lit_t of int * dataType
+  | String_lit_t of string * dataType
+  | Call_t of string * expr_t list * dataType
+  | VarAssign_t of expr_t * expr_t * dataType
+  | Matrix_element_t of string * expr_t * expr_t * dataType
+  | Precedence_expr_t of expr_t * dataType
+	| Struct_element_t of string * string * dataType
+  | Noexpr_t of dataType*)
 and gen_expr = function
-    ANumLit(flt, _)   -> writeNumLit flt
-  | ABoolLit(boolLit, _) -> writeBoolLit boolLit
+    Id_t(flt, _)   -> flt
+  | Float_lit_t(floatLit, _) -> writeBoolLit boolLit
   | ACharLit(charLit, _) -> writeCharLit charLit
   | AId(name, typed, typ) -> writeID  name typed 
   | AFuncCreate(params, body, _) -> writeFunc params body
@@ -131,7 +147,11 @@ and gen_expr = function
   Specific Statement evaluation
 ********************************************************************************)
 and writeStmtList stmtList = 
-    sprintf "%s" ("{\n  " ^ String.concat "  " (List.map string_of_stmt stmtList) ^ "}\n")
+    sprintf "%s" ("{\n  " ^ String.concat "  " (List.map gen_stmt stmtList) ^ "}\n")
+
+and writeExprList exprList = 
+    sprintf "%s" ("\n /* " ^ String.concat "  " (List.map gen_expr exprList) ^ "\n*/")
+
 
 and writeReturnStmt exp = 
   let expStr = (gen_expr exp) in
