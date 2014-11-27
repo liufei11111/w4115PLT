@@ -15,7 +15,7 @@ type expr_t =
   | Boolean_t of string * dataType
   | Call_t of string * expr_t list * dataType
   | VarAssign_t of expr_t * expr_t * dataType
-  | Matrix_element of string * expr_t * expr_t * dataType
+  | Matrix_element_t of string * expr_t * expr_t * dataType
   | Precedence_expr_t of expr_t * dataType
 	| Struct_element_t of string * string * dataType
   | Noexpr_t of dataType
