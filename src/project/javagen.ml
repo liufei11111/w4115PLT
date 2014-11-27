@@ -27,19 +27,19 @@ let type_of (ae : Sast.expr_t) : Ast.dataType =
   match ae with
   | Binary_op_t(_, _, _, t) -> t
   | MatBinary_op_t (_, _, _, t) -> t
+	| Id_t (_, t) -> t
   | Float_lit_t(_, t) -> t
   | Int_lit_t(_, t) -> t
   | String_lit_t( _, t) -> t
   | Boolean_t(_, t) -> t
   | Call_t(_, _, t) -> t
   | VarAssign_t(_, _, t) -> t
-  | AListCreate(_, t) -> t
-  | ASublist(_, _, _, t) -> t
-  | AObjCreate(_, t) -> t
-  | ABinop(_, _, _, t) -> t
-  | ANot(_, t) -> t
+  | Matrix_element(_,_,_, t) -> t
+  | Precedence_expr_t(_, t) -> t
+  | Struct_element_t(_, _, t) -> t
+  | Noexpr_t( t) -> t
 
-let java_from_type (ty: Sast.t) : string = 
+let java_from_type (ty: Ast.dataType) : string = 
     match ty with
       | TFunc(a,b) -> "IPCFunction" 
       | TList(a) -> "PCList"
