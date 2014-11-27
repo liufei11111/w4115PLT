@@ -68,3 +68,4 @@ src_copy/extern/java
 src_copy/extern/tests
 src_copy/microC
 src_copy/project
+src/project/tests
