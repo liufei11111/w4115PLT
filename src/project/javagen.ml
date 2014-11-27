@@ -38,12 +38,25 @@ let type_of (ae : Sast.expr_t) : Ast.dataType =
   | Precedence_expr_t(_, t) -> t
   | Struct_element_t(_, _, t) -> t
   | Noexpr_t( t) -> t
-
+(*   Int -> "int"
+	| Float -> "float"
+	| String -> "string"
+	| Matrix -> "matrix"
+	| Option -> "option"
+	| Structure -> "structure"
+	| Boolean -> "bool"
+	| Void -> "void"
+*)
 let java_from_type (ty: Ast.dataType) : string = 
     match ty with
-      | TFunc(a,b) -> "IPCFunction" 
-      | TList(a) -> "PCList"
-      | _ ->  "PCObject"
+      | Int -> "int" 
+      | Float -> "float"
+			| String -> "string"
+			| Matrix -> "matrix"
+			| Option -> "option"
+			| Structure -> "structure"
+			| Boolean -> "bool"
+			| Void -> "void"
 
 
 
@@ -72,10 +85,22 @@ and gen_program fileName prog = (*have a writetofile*)
 
 and writeStmtList stmtList = 
   let outStr = List.fold_left (fun a b -> a ^ (gen_stmt b)) "" stmtList in
-  sprintf "%s" outStr
-
+  	sprintf "%s" outStr
+		(*    type stmt_t =*)
+		(* Block_t of stmt_t list
+  | Expr_t of expr_t 
+  | If_t of expr_t * stmt_t * stmt_t 
+  | For_t of expr_t * expr_t * expr_t * stmt_t
+  | While_t of expr_t * stmt_t 
+  | Return_t of expr_t
+  | Vardec_t of var_dec * dataType
+  | Matdec_t of mat_dec * dataType
+	| Structdec_t of string * expr_t list * dataType
+	| Optiondec_t of string * expr_t list * dataType
+	*)
 and gen_stmt = function
-    AReturn(exp, _) -> writeReturnStmt exp
+		Block_t(stmtList) -> writeStmtList stmtList
+  | AReturn(exp, _) -> writeReturnStmt exp
   | AIf(condTupleList, elseStmt) -> writeIfStmt condTupleList elseStmt
   | AFor(asnTuple, cond, incrTuple, stmtList) -> 
       writeForLoop asnTuple cond incrTuple stmtList
@@ -105,6 +130,8 @@ and gen_expr = function
 (*******************************************************************************
   Specific Statement evaluation
 ********************************************************************************)
+and writeStmtList stmtList = 
+    sprintf "%s" ("{\n  " ^ String.concat "  " (List.map string_of_stmt stmtList) ^ "}\n")
 
 and writeReturnStmt exp = 
   let expStr = (gen_expr exp) in
