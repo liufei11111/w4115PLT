@@ -1,0 +1,16 @@
+Int a;
+Boolean b1;
+b1 = True;
+for (a = 0; a < 10; a = a +1 ){
+	Int b;
+	b =1;
+}
+for (a = 0; a < 10; a = a +1 )
+	Int b;
+
+for (a = 0; b1; a = a +1 ){
+	Int b;
+	b =1;
+}
+
+

@@ -1,0 +1,14 @@
+stmts:
+
+string s;
+s = " ";
+s = "";
+s = "asdf";
+s = "!@asf#$%^as325df34&*()1sfd";
+s = "as\\nasd";
+s = "asd\r";
+
+fdecls:
+
+
+

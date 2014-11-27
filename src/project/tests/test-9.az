@@ -1,0 +1,47 @@
+Int a;
+Int b;
+Int c;
+b = 2;
+a = 10;
+if (a > b){
+	c = 1;
+}
+else
+	c = 0;
+
+if (a > b) 
+	c = 1;
+else 
+	c =0;
+
+if (a > b){
+	c =1;
+}
+
+if (a > b)
+	c = 1;
+
+if( a > b)
+	c = 1;
+else {
+	c = 0;
+}
+if ( a >= b )
+	c = 1;
+if ( a < b)
+	c = 1;
+if ( a <= b)
+	c = 1;
+if ( a == b)
+	c = 1;
+if (a != b)
+	c = 1;
+
+Boolean b1;
+Boolean b2;
+if (b1)
+	c = 1;
+if (b1 && b2)
+	c = 1;
+if (b1 || b2)
+	c = 1;

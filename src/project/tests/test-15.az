@@ -1,0 +1,13 @@
+Int a;
+a = 5;
+Boolean b1;
+Boolean b2;
+b1 = Ture;
+b2 = Talse;
+
+while (a > 0){
+	a = a - 1;
+}
+
+while (b1 && b2)
+	a = 10;

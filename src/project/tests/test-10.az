@@ -1,0 +1,19 @@
+Int a;
+a = 3;
+
+Int b;
+b = a + 5;
+b = 5 + a;
+
+Int c;
+a = b - 1;
+a = 1 - b;
+c = a - b;
+
+c = b;
+c = b * 3;
+c = a * b;
+
+b = a / 2;
+c = a / b;
+c = 1 / a;

@@ -1,0 +1,15 @@
+stmts:
+
+int a;
+float b;
+string c;
+matrix m(1, 2);
+option o;
+structure s;
+bool b;
+void v;
+
+fdecls:
+
+
+
