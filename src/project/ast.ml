@@ -31,7 +31,6 @@ type expr =
 	| Float_lit of float
 	| Int_lit of int
 	| String_lit of string
-	| Boolean of string
 	| Call of string * expr list (*ComputeSomething(v1,v2,v3);*)
 	| VarAssign of expr * expr			(* IDENTIFIER ASSIGN expr SEMICOLON *)
 	| Matrix_element of string * expr * expr	(* IDENTIFIER LSQUARE expr RSQUARE LSQUARE expr RSQUARE*)
@@ -117,7 +116,6 @@ let rec string_of_expr = function
 	| Matrix_element (v,e1,e2)->v ^"["^ string_of_expr e1^" , "^ string_of_expr e2^"] "
   | Call(f, el) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> "void"
-	| Boolean(s) -> s
 	| Precedence_expr(e) -> "( " ^ string_of_expr e ^ " )"
 	| Struct_element(struct_id, element_id) -> struct_id ^ "->" ^ element_id
 	| _ -> "space"
