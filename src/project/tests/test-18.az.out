@@ -1,11 +1,13 @@
 stmts:
 
-Option o1 = {};
-Option o2 = { a="" };
-Option o3 = { a="a" };
+Option o2 = {a = ""};
+Option o3 = {a = "a"};
 string str;
 str = "str";
-Option o4 = { a=str };
-Option o5 = { a=str, b = "b"};
+Option o4 = {a = str};
+Option o5 = {a = str, b = "b"};
 
 fdecls:
+
+
+

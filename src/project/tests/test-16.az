@@ -1,6 +1,5 @@
 {* structure declaration *}
 
-Structure s1 = {};
 Structure s2 = { a="" };
 Structure s3 = { a="a" };
 String str;

@@ -1,6 +1,5 @@
 {* option declaration *}
 
-Option o1 = {};
 Option o2 = { a="" };
 Option o3 = { a="a" };
 String str;
