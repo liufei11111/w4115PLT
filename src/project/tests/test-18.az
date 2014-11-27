@@ -1,0 +1,9 @@
+{* option declaration *}
+
+Option o1 = {};
+Option o2 = { a="" };
+Option o3 = { a="a" };
+String str;
+str = "str";
+Option o4 = { a=str };
+Option o5 = { a=str, b = "b"};

@@ -1,0 +1,6 @@
+{* structure access *}
+
+String str;
+str = "str";
+Structure s = { a=str, b="b"};
+s->a = s->b;

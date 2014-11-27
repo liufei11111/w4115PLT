@@ -1,0 +1,11 @@
+stmts:
+
+Structure s1 = {};
+Structure s2 = { a="" };
+Structure s3 = { a="a" };
+string str;
+str = "str";
+Structure s4 = { a=str };
+Structure s5 = { a=str, b = "b"};
+
+fdecls:

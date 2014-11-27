@@ -1,0 +1,6 @@
+{* option access *}
+
+String str;
+str = "str";
+Option o = { a=str, b="b"};
+o->a = o->b;

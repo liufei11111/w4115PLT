@@ -1,0 +1,8 @@
+stmts:
+
+string str;
+str = "str";
+Option o = { a=str, b="b"};
+o->a = o->b;
+
+fdecls:
