@@ -1,10 +1,23 @@
 open Ast
 open Sast
 open List
+(*Structure symbol table*)
 (**************************************** Symbol Tables *)
-type symbol_table = {
+type struc_table = {
+	struc_name : string; (*name of a structure*)
+	mutable struc_fields : string list; (*keys within a structure*)
+}
+
+type option_table = {
+	option_name : string; (*name of a option*)
+	mutable option_fields : string list; (*keys within a option*)
+}
+
+type symbol_table = { (*general symbol table for variables*)
   parent : symbol_table option;
   mutable variables : (string * Ast.dataType) list;
+	mutable structs : struc_table list;
+	mutable options : option_table list;
 }
 
 type environment = {
@@ -16,12 +29,12 @@ type environment = {
 let new_env : environment = 
   let core =[("print", [String], Void)] in 
   let utils = [("size", [String], Int)] in
-  let s = { variables = []; parent = None }
+  let s = { variables = [];structs = []; options = []; parent = None }
   in
   {scope = s ; func_return_type = None; functions = concat [core; utils];}
 
 let inner_scope (env : environment) : environment =
-  let s = { variables = []; parent = Some(env.scope) } in
+  let s = { variables = []; structs = []; options = []; parent = Some(env.scope) } in
   { env with scope = s; }
 
 (****************************************** Utils*)
@@ -30,9 +43,35 @@ let rec find_vars (env_scope : symbol_table) (var_name : string) : Ast.dataType 
     let (_, typ) = List.find (fun (s, _) -> s = var_name) env_scope.variables in
     Some(typ)
   with Not_found ->
-    match env_scope.parent with
-    | Some(p) -> find_vars p var_name
-    | _ -> None 
+		try 
+			let exist_struct = List.find (fun x ->x.struc_name =var_name) env_scope.structs in
+			Some(Structure)
+		with Not_found ->
+			try
+  			let exist_option = List.find (fun x->x.option_name = var_name) env_scope.options in
+  			Some(Option)
+			with Not_found ->
+        (match env_scope.parent with
+        | Some(p) -> find_vars p var_name
+        | _ -> None )
+
+let rec find_structs (env_scope : symbol_table) (var_name : string) =
+	try 
+		let struct_find = List.find (fun x -> x.struc_name = var_name) env_scope.structs in
+		struct_find
+	with Not_found ->
+		(match env_scope.parent with
+        | Some(p) -> find_structs p var_name
+        | _ -> None)
+
+let rec find_options (env_scope : symbol_table) (var_name : string) =
+	try 
+		let option_find = List.find (fun x -> x.option_name = var_name) env_scope.structs in
+		option_find
+	with Not_found ->
+		match env_scope.parent with
+        | Some(p) -> find_options p var_name
+        | _ -> None 			
 
 let find_funcs (env : environment) (var_name : string) = 
 	try
@@ -48,36 +87,18 @@ let get_type (e : Sast.expr_t): Ast.dataType =
   | Float_lit_t(s,t) -> t
   | Int_lit_t(s,t) -> t
   | String_lit_t(s,t) -> t
-  | Boolean(s,t) -> t
+  | Boolean_t(s,t) -> t
   | Call_t(s, vl, t) ->t
   | VarAssign_t(e1,e2,t)->t
-  | Matrix_element(s,e1,e2,t)->t 
+  | Matrix_element_t(s,e1,e2,t)->t 
   | Precedence_expr_t(e1,t)->t 
 	| Struct_element_t(s1,s2,t)->t 
   | Noexpr_t(t)->t
 
-(****************************************** Annotate and elementary check*)
-let annotate_assign (env : environment) (e1 : Ast.expr) (e2 : Ast.expr) : Sast.expr_t = (* For variable assign*)
-  let e2_a = annotate_expr env e2 in 
-  match e1 with
-  | Id(x) -> 
-    let src_type = get_type e2_a in
-    let typ = find_vars env.scope x in
-    (match typ with
-      | Float -> 
-        if (src_type = Float) || (src_type = Int)
-        then VarAssign_t(Id_t(x, typ), e2_a, typ)
-        else raise(Failure("variable "^x^" need to be float type"))
-      | None -> 
-          raise(Failure("variable "^x^" not declared before assignment"))
-      | _ -> 
-        if dst_typ <> typ
-        then raise(Failure("variable "^x^" need to be assigned with same type"))
-        else VarAssign_t(Id_t(x, typ), e2_a, typ)
-      )
-  | _ -> raise(Failure("Assignment need to be applied to a variable"))
+let get_formal_type (vardec : Ast.var_dec) : Ast.dataType  = var_dec.vtype
 
-let annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t = 
+(****************************************** Annotate and elementary check*)
+let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t = 
   match e with 
   Binary_op(e1, op, e2) -> 
 		let e1_a = annotate_expr env e1 in
@@ -125,42 +146,69 @@ let annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t =
 			Some(tp) -> Call_t(name, exl_a, tp) (*Check the input variables are the same type *)
 			|None ->raise(Failure ("Unrecognized identifier " ^ s ^ ".")))
   | VarAssign(e1, e2)->  annotate_assign env e1 e2
-  | ElemAssign(id, e1,e2,e3) -> 
-		let e1_a = annotate_expr env e1 in 
-		let e1_type = get_type e1_a in
-		if e1_type = Int
-		then let e2_a = annotate_expr env e2 in
-			let e2_type = get_type e2_a in
-			if e2_type= Int
-			then let e3_a = annotate_expr env e3 in
-				let e3_type = get_type e3_a in
-				if e3_type = Int || e3_type = Float
-				then let var_typ = find_vars env.scope id in
-					if var_typ = Matrix
-					then ElemAssign_t(id, e1_a, e2_a, e3_a, Float)
-					else raise(Failure ("Element assign only allowed to Matrix type" ))
-				else raise(Failure ("Assigned value to matrix has to be of type Int or Float" ))
-			else raise(Failure ("Index of matrix should be of type Int" ))
-		else raise(Failure ("Index of matrix should be of type Int" ))
   | Precedence_expr(e) -> annotate_expr env e
-  | Noexpr -> Noexpr_t(Void)
+  | _ -> Noexpr_t(Void)
 
-let annotate_b_expr (env : environment) (e : Ast.b_expr): Sast.b_expr_t =  (*TODO add single Boolean variable*)
-  match e with
-  Bool_expr1(e1, bo, e2) ->
-    let e1_a = annotate_expr e1 in
-    let e2_a = annotate_expr e2
-    in 
-      let e1_type = get_type e1_a in
-      let e2_type = get_type e2_a
-      in
-        if (e1_type <> Boolean) ||  (e2_type <> Boolean)
-        then raise(Failure("Both sides of boolean expression need to be "))
-        else Bool_expr1(e1_t, bo, e2_t)
-  | Bool_expr2(be1, bo ,be2)-> Bool_expr2_t(be1_t, bo, be2_t)
-  | Precedence_bool_expr(be1) -> Precedence_bool_expr_t(be1) 
+and check_matrix_elem (env : environment) (name:string)(e1:Ast.expr)(e2:Ast.expr) : Sast.expr_t = 
+	let var_type = find_vars env.scope name in
+	match var_type with
+	| Matrix -> 
+		let e1_a = annotate_expr env e1 in
+		let e2_a = annotate_expr env e2 in
+		let e1_typ = get_type e1_a in
+		let e2_typ = get_type e2_a in
+		 if (e1_typ<>Int)||(e2_typ<>Int)
+		 	then raise(Failure("Indexes of Matrix must be of Int type"))
+		 else Matrix_element_t(name,e1,e2,Float)
+	| _ -> raise(Failure("Should be of Matrix type for accessing elements"))
 
-let annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t = 
+and check_struc_elem (env:environment) (name:string)(key:string) : Sast.expr_t = 
+	let var_type = find_vars env.scope name in
+	match var_type with
+	| Structure -> 
+		let struc = find_structs env.scope name in
+		try 
+			let field = List.find (fun s -> s = var_name) struc.struc_fields in
+    	Struct_element_t(name,key,String)
+  	with Not_found -> raise(Failure("Field does not exist within struct"))
+	| _ -> raise(Failure("Should be of Structure type for accessing fields"))
+
+and annotate_assign (env : environment) (e1 : Ast.expr) (e2 : Ast.expr) : Sast.expr_t = (* For variable assign*)
+  let e2_a = annotate_expr env e2 in 
+  match e1 with
+  | Id(x) -> 
+    let e2_type = get_type e2_a in
+    let e1_type = find_vars env.scope x in
+    (match e1_type with
+      | Float -> 
+        if (e2_type = Float) || (e2_type = Int)
+        then VarAssign_t(Id_t(x, e1_type), e2_a, e1_type)
+        else raise(Failure("variable "^x^" need to be float type"))
+      | None -> 
+          raise(Failure("variable "^x^" not declared before assignment"))
+      | _ -> 
+        if e2_type <> e1_type
+        then raise(Failure("variable "^x^" need to be assigned with same type"))
+        else VarAssign_t(Id_t(x, e1_type), e2_a, e2_type)
+      )
+	|Matrix_element(s,me1,me2)->
+		let elem_t = check_matrix_elem env s me1 me2 in
+		let value_type = get_type e2_a in
+		(match value_type with
+		| Float -> VarAssign_t(Matrix_element_t(s,me1,me2,Float), e2_a, value_type)
+		| Int -> VarAssign_t(Matrix_element_t(s,me1,me2,Int),e2_a,value_type)
+		| _ -> raise(Failure("Only allow Float or Int assigned to Matrix element"))
+		)
+	|Struct_element(s1,s2)-> 
+		let struct_ele_a = check_struc_elem env s1 s2 in
+		let value_type = get_type e2_a in
+		(match value_type with
+		|String -> VarAssign_t(Struct_element_t(s1,s2,String),e2_a,value_type)
+		|_ ->raise(Failure("Only String type can be assigned to structure"))
+		)
+  | _ -> raise(Failure("Assignment need to be applied to a variable"))
+
+let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t = 
   match s with 
     Block(stmtlist) ->
       let env' = inner_scope env
@@ -173,12 +221,11 @@ let annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
       in
         Expr_t(expr_a)
     | If(be, body1, body2) ->
-      let be_a = annotate_b_expr env be in
+      let be_a = annotate_expr env be in
       let env' = inner_scope env 
       in
         let body1_a = annotate_stmts env' body1 in
-        let body2_a = annotate_stmts env' body2
-        in
+        let body2_a = annotate_stmts env' body2 in
           If_t(be_a, body1_a, body2_a)
     | For(ae1, be, ae2, body)->
       let ae1_a = 
@@ -188,7 +235,7 @@ let annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
         | _ -> raise(Failure("Need assignment in for loop header"))) in
       let be_a = 
         (match be with
-        | Some(x) -> Some(annotate_b_expr env x)
+        | Some(x) -> Some(annotate_expr env x)
         | None -> None) in
       let ae2_a = 
         (match ae2 with
@@ -200,7 +247,7 @@ let annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
         in
           For_t(ae1_a, be_a, ae2_a, body_a)
     | While(be, body)  ->
-      let be_a = annotate_b_expr env be in
+      let be_a = annotate_expr env be in
       let env' = inner_scope env 
       in
         let body_a = annotate_stmts env' body 
@@ -246,9 +293,9 @@ let annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
               else 
 								let a = env.scope.variables@[(var_name, var_type)] in
                 Matdec_t(vd, var_type)
-
-
-let get_formal_type (vardec : Ast.var_dec) : Ast.dataType  = var_dec.vtype
+								
+and annotate_stmts  (env : environment) (stmts : Ast.stmt list) : Sast.stmt_t list =
+  List.map (fun x -> annotate_stmt env x) stmts
 	
 let addFormal (env: environment) (vardec : Ast.var_dec) = 
 	let v_name = vardec.vname in 
@@ -260,7 +307,8 @@ let addFormal (env: environment) (vardec : Ast.var_dec) =
 		  then raise(Failure("Variable name " ^ name ^ " already been used."))
 		else 
 			env.scope.variables@[(v_name,v_type)];
-let annotate_fun (env: environment) (func : Ast.func_dec) : Sast.func_dec_t = 
+
+let annotate_fun (env: environment) (func : Ast.func_dec) = 
 	let ret_type = func.ret in
 	let name = func.func_name in
   	if is_keyword name
@@ -281,8 +329,7 @@ let annotate_fun (env: environment) (func : Ast.func_dec) : Sast.func_dec_t =
 let annotate_funcs  (env : environment) (funcs : Ast.func_dec list): Sast.func_dec_t list  = 
 	List.map (fun x -> annotate_func env x) funcs
 
-let annotate_stmts  (env : environment) (stmts : Ast.stmt list) : Sast.stmt_t list =
-  List.map (fun x -> annotate_stmt env x) stmts
+
 
 (****************************************** Checking Program and main function exists *)
 

@@ -12,7 +12,6 @@ type expr_t =
   | Float_lit_t of float * dataType
   | Int_lit_t of int * dataType
   | String_lit_t of string * dataType
-  | Boolean_t of string * dataType
   | Call_t of string * expr_t list * dataType
   | VarAssign_t of expr_t * expr_t * dataType
   | Matrix_element_t of string * expr_t * expr_t * dataType
