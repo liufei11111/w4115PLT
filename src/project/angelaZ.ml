@@ -12,15 +12,14 @@
 type action = Ast | Sast | Java | Debug
 
 let _ =
-  let action = if Array.length Sys.argv > 1 then
-    List.assoc Sys.argv.(1) [ ("-a", Ast); ("-s", Sast); ("-j", Java); ("-d", Debug);]
-  else Java in
+  let action = (*if Array.length Sys.argv > 1 then
+    List.assoc Sys.argv.(1) [ ("-a", Ast)(*; ("-s", Sast)*); ("-j", Java)(*; ("-d", Debug);*)]
+  else *)Java in
   let lexbuf = Lexing.from_channel stdin in
   let program = Parser.program Scanner.token lexbuf in
   match action with
-  | Ast -> 
-      print_string (Ast.string_of_prog program)
-  | Debug ->
+ 
+  (*| Debug ->
       let ap = Analyzer.annotate_prog program in
       let constraints = Analyzer.collect_prog ap in
       let subs = Analyzer.unify (List.rev constraints) in
@@ -33,8 +32,10 @@ let _ =
       print_string (Sast.string_of_inferred_prog aProgram)
   | Sast ->
       let ap = Analyzer.infer_prog program in
-      print_string ("\n" ^ Sast.string_of_inferred_prog ap)
+      print_string ("\n" ^ Sast.string_of_inferred_prog ap)*)
   | Java ->
-      let ap = Analyzer.infer_prog program in
-      let _ = Javagen.gen_program "output" ap in
+      (*let ap = Analyzer.infer_prog program in*)
+      let _ = Javagen.gen_program "output" program in
       print_string "Success! Compiled to java/output.java\n"
+(* | Ast -> 
+      print_string (Ast.string_of_program program)*)

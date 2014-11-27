@@ -1,3 +1,0 @@
-results = List.range(1, 1);
-
-print(results[0]);

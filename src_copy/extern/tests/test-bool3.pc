@@ -1,6 +1,0 @@
-if (!true) {
-	print("hey");
-}
-if (!false) {
-	print("dude");
-}

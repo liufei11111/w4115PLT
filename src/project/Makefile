@@ -1,4 +1,4 @@
-OBJS = ast.cmo parser.cmo scanner.cmo   calc.cmo
+OBJS = ast.cmo parser.cmo scanner.cmo javagen.cmo angelaZ.cmo  calc.cmo 
 
 TESTS = arith1 arith2 arith3 arith4 \
 	fib \
@@ -17,7 +17,8 @@ TARFILES = Makefile testall.sh scanner.mll parser.mly \
 	ast.ml bytecode.ml  compile.ml execute.ml calc.ml \
 	$(TESTS:%=tests/test-%.mc) \
 	$(TESTS:%=tests/test-%.out)
-
+angelaZ: $(OBJS)
+	ocamlc -g -o angelaZ $(OBJS)
 calc : $(OBJS)
 	ocamlc -o calc $(OBJS)
 
@@ -55,3 +56,7 @@ parser.cmx: ast.cmx parser.cmi
 scanner.cmo: parser.cmi 
 scanner.cmx: parser.cmx 
 parser.cmi: ast.cmo 
+javagen.cmo : ast.cmo
+javagen.cmx : ast.cmx
+pc.cmo : scanner.cmo  parser.cmi javagen.cmo ast.cmo 
+pc.cmx : scanner.cmx  parser.cmx javagen.cmx ast.cmx 

@@ -1,5 +1,0 @@
-
-google = download("http://www.google.com");
-idx = List.find(google, "doctype");
-result = google[0:idx-1];
-print(result);

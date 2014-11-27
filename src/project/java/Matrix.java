@@ -1,6 +1,6 @@
 
 public class Matrix {
-    double[][] matrix;
+    public double[][] matrix;
     public Matrix(int x,int y){
         matrix=new double[x][y];
     }
