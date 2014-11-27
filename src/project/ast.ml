@@ -23,7 +23,6 @@ type mat_dec = {
 type bin_op = Add | Sub | Times | Divide| And | Or | Eq | Neq | Lt | Gt | Leq | Geq
 type mat_op = MTime | MDivide |MAdd | MSub
 
-
 type expr =
 	 Binary_op of expr * bin_op * expr
 	| MatBinary_op of expr * mat_op * expr
@@ -43,6 +42,10 @@ type expr =
 	| Precedence_bool_expr of b_expr*)
 	|	Noexpr
 
+type struct_arg = {
+	id : string;
+	value : expr;
+}	
 
 type stmt =
 	  Block of stmt list					(* LBRACE Statement_list RBRACE *)
@@ -53,8 +56,9 @@ type stmt =
 	| Return of expr
 	| Vardec of var_dec
 	| Matdec of mat_dec
-	| Structdec of string * expr list
-	| Optiondec of string * expr list
+	| Structdec of string * struct_arg list
+	| Optiondec of string * struct_arg list
+
 
 type func_dec = {
 	ret : dataType;
@@ -120,6 +124,7 @@ let rec string_of_expr = function
 	| Struct_element(struct_id, element_id) -> struct_id ^ "->" ^ element_id
 	| _ -> "space"
 
+let string_of_struct_arg arg = arg.id ^ " = " ^ string_of_expr arg.value
 
 (*let rec string_of_b_expr = function 
 	 Bool_expr1(e1, o, e2) ->
@@ -149,8 +154,8 @@ let rec string_of_stmt = function
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
 	| Vardec(vdecl) -> string_of_vdecl vdecl ^ ";\n"
 	| Matdec(mdecl) -> string_of_mdecl mdecl ^ ";\n"
-	| Structdec (id, exprList) -> "Structure " ^ id ^ " = {" ^ String.concat ", " (List.map string_of_expr (List.rev exprList)) ^ "};\n"
-	| Optiondec (id, exprList) -> "Option " ^ id ^ " = {" ^ String.concat ", " (List.map string_of_expr (List.rev exprList)) ^ "};\n"
+	| Structdec (id, argList) -> "Structure " ^ id ^ " = {" ^ String.concat ", " (List.map string_of_struct_arg (List.rev argList)) ^ "};\n"
+	| Optiondec (id, argList) -> "Option " ^ id ^ " = {" ^ String.concat ", " (List.map string_of_struct_arg (List.rev argList)) ^ "};\n"
  
 	 
 let string_of_fdecl fdecl =

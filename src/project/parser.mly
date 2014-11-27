@@ -91,9 +91,12 @@ stmt_list:
     /* nothing */  { [] }
   | stmt_list stmt { $2 :: $1 }
 
+struct_arg:
+  ID ASSIGN expr { {id = $1; value = $3} }
+
 struct_arg_list:
-		expr	{ [$1] }
-	| struct_arg_list COMMA expr {$3 :: $1}
+		struct_arg	{ [$1] }
+	| struct_arg_list COMMA struct_arg {$3 :: $1}
 
 stmt:
     expr SEMI { Expr($1) }
