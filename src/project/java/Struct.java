@@ -2,7 +2,7 @@ import java.util.HashMap;
 
 
 public class Struct {
-    HashMap<String,String> valMap;
+    public HashMap<String,String> valMap;
 //    HashMap<String,String> typeMap;
     public Struct (){
         valMap=new HashMap<String,String>();

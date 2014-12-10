@@ -1,17 +1,19 @@
 Int i;
-i = 2;
+
 Boolean b;
-b = True;
+
 
 Int main(Int argc, String argv) {
-	Structure s = { a = 1, b = 2, c = 3 };
+	Int i;
+	Structure s = { a = "1", b = "2", c = "3" };
     Matrix m(1,1);
-        m[0][0]; 
-    m3 = (m +. m2) *.. 4;
+    Float x;
+        x= m[0][0];
+m = (m +. m) *.. 4;
     Option o = {a = "1"};
     o -> a="1";
-    argc = 	s -> a;
-    if (i == 2 || i) {
+    argv = 	s -> a;
+    if (i == 2 || i==0) {
 		return argc;
 	} else {
 		return i+1;
@@ -24,6 +26,6 @@ Int main(Int argc, String argv) {
 }
 
 Void main2(Int argc2, Matrix m) {
-	main(a, "str");
+	main(0, "str");
 }
 

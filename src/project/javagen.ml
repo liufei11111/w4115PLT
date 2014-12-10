@@ -6,7 +6,7 @@ open Ast
 **)
 let string_of_dataType = function
 	  Int -> "int"
-	| Float -> "float"
+	| Float -> "double"
 	| String -> "String"
 	| Matrix -> "Matrix"
 	| Option -> "Option"
@@ -52,7 +52,7 @@ let rec string_of_expr = function
   | Call(f, el) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> "void"
 	| Precedence_expr(e) -> "( " ^ string_of_expr e ^ " )"
-	| Struct_element(struct_id, element_id) -> struct_id ^ ".get(" ^ element_id^")"
+	| Struct_element(struct_id, element_id) -> struct_id^".valMap" ^ ".get(\"" ^ element_id^"\")"
 	| _ -> "space"
 (*string for struct*)
 let string_of_struct_arg (struct_id,arg) = struct_id^".valMap.put(\""^arg.id ^ "\" , " ^ string_of_expr arg.value^")"
@@ -100,5 +100,5 @@ let rec writeToFile fileName progString =
 let gen_program fileName prog = (*have a writetofile*)
   let programString = string_of_program_gen (fst prog ,snd prog ) in
   let out = sprintf 
-	"\npublic class %s\n{\n%s\n}" fileName programString in
+	"\npublic class %s\n{\n%s%s\n}" fileName programString "public static void main(String[] args){ main(0,\"\");}" in
   	writeToFile fileName out
