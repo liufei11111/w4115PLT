@@ -146,7 +146,9 @@ let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t =
 		in
 			let e1_t = get_type e1_a in
 			let e2_t = get_type e2_a in 
-			(match e1_t with
+			(match op with
+			| Add | Sub | Times | Divide ->
+				(match e1_t with
 				| Float -> 
 					if (e2_t = Float) || (e2_t = Int)
 					then Binary_op_t(e1_a, op, e2_a, Float)
@@ -160,14 +162,28 @@ let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t =
 					if e1_t = e2_t
 					then Binary_op_t(e1_a, op, e2_a, e1_t)
 					else raise(Failure("Binary operation has un-consistent types")))
+			| And | Or | Eq | Neq | Lt | Gt | Leq | Geq ->
+				if (e1_t<>Boolean) || (e2_t<>Boolean)
+					then raise(Failure("Boolean should be the types around boolean operations"))
+				else Binary_op_t(e1_a, op, e2_a, e1_t)
+				)
+			
   | MatBinary_op(e1, op, e2) ->
 		let e1_a = annotate_expr env e1 in
 		let e2_a = annotate_expr env e2 in
 			let e1_t = get_type e1_a in
 			let e2_t = get_type e2_a in
+			(match op with
+			| MTime | MDivide |MAdd | MSub ->
 				if (e1_t <> Matrix) || (e2_t <> Matrix)
-				then raise(Failure("Matrix operation has to be Matrix type"))
+				then raise(Failure("Matrix operation has to be Matrix type on both sides"))
 				else MatBinary_op_t(e1_a, op, e2_a, Matrix)
+			| MITime | MIDivide |MIAdd | MISub ->
+				if (e1_t <> Matrix) || ((e2_t <> Int) && (e2_t <> Float))
+				then raise(Failure("MatrixElment operation has to be Matrix type on left side and Integer on the right side"))
+				else MatBinary_op_t(e1_a, op, e2_a, Matrix)
+				)
+				
   | Id(s) ->
 		let typ = find_vars env.scope s in Id_t(s,typ)
   | Float_lit(f) ->Float_lit_t(f,Float)
