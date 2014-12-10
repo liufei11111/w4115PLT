@@ -20,13 +20,17 @@ rule token = parse
 | ':'      { COLON }(*key:map*)
 | ','      { COMMA }
 | '+'      { PLUS }
-| "+."			{MPLUS}
-| "-."			{MMINUS}
+| "+."		 {MPLUS}
+| "+.."    {MIPLUS}
 | '-'      { MINUS }
+| "-."			{MMINUS}
+| "-.."    {MIMINUS}
 | '*'      { TIMES }
 | "*."      { MTIMES }
+| "*.."    {MITIMES}
 | '/'      { DIVIDE }
 | "/."      { MDIVIDE }
+| "/.."      { MIDIVIDE }
 | '='      { ASSIGN }
 | "&&"     { AND }
 | "||"     { OR }

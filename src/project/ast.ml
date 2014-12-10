@@ -21,7 +21,7 @@ type mat_dec = {
 }
 
 type bin_op = Add | Sub | Times | Divide| And | Or | Eq | Neq | Lt | Gt | Leq | Geq
-type mat_op = MTime | MDivide |MAdd | MSub
+type mat_op = MTime | MDivide |MAdd | MSub | MITime | MIDivide |MIAdd | MISub
 
 type expr =
 	 Binary_op of expr * bin_op * expr
@@ -116,6 +116,7 @@ let rec string_of_expr = function
       string_of_expr e1 ^ " " ^
       (match o with
 			MAdd -> "+." | MSub -> "-." | MTime -> "*." | MDivide -> "/."
+			| MIAdd -> "+.." | MISub -> "-.." | MITime -> "*.." | MIDivide -> "/.."
 			) ^ " " ^
       string_of_expr e2
   | VarAssign(v, e) -> string_of_expr v ^ " = " ^ string_of_expr e

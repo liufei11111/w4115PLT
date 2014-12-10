@@ -1,7 +1,7 @@
 %{ open Ast %}
 
 %token SEMI COLON LPAREN RPAREN LSQUARE RSQUARE LBRACE RBRACE COMMA
-%token PLUS MINUS MPLUS MMINUS MTIMES TIMES DIVIDE MDIVIDE ASSIGN ARROW
+%token PLUS MINUS MPLUS MMINUS MIPLUS MIMINUS TIMES DIVIDE MTIMES MDIVIDE MITIMES MIDIVIDE ASSIGN ARROW
 %token EQ NEQ LT LEQ GT GEQ AND OR
 %token RETURN IF ELSE FOR WHILE
 %token BOOLEAN TRUE FALSE MATRIX STRUCTURE OPTION INT FLOAT STRING VOID
@@ -18,8 +18,8 @@
 %left AND
 %left EQ NEQ
 %left LT GT LEQ GEQ
-%left PLUS MINUS MPLUS MMINUS
-%left TIMES DIVIDE MTIMES MDIVIDE
+%left PLUS MINUS MPLUS MMINUS MIPLUS MIMINUS
+%left TIMES DIVIDE MTIMES MDIVIDE MITIMES MIDIVIDE
 %left ARROW
 
 %start program
@@ -133,6 +133,10 @@ expr:
   | expr MMINUS  expr { MatBinary_op($1, MSub,   $3) }
   | expr MTIMES  expr { MatBinary_op($1, MTime,  $3) }
   | expr MDIVIDE expr { MatBinary_op($1, MDivide,   $3) }
+	| expr MIPLUS   expr { MatBinary_op($1, MIAdd,   $3) }
+  | expr MIMINUS  expr { MatBinary_op($1, MISub,   $3) }
+  | expr MITIMES  expr { MatBinary_op($1, MITime,  $3) }
+  | expr MIDIVIDE expr { MatBinary_op($1, MIDivide,   $3) }
   | expr ASSIGN expr   { VarAssign($1, $3) }
 	| ID LSQUARE expr RSQUARE LSQUARE  expr RSQUARE  { Matrix_element($1, $3, $6) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
