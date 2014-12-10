@@ -38,7 +38,6 @@ let rec string_of_expr = function
       ) ^ " " ^
       string_of_expr e2
 	| MatBinary_op(e1, o, e2) ->
-      string_of_expr e1 ^ " " ^
       (match o with
 			MAdd -> "MatrixMathematics.add("^string_of_expr e1^" ,"^string_of_expr e2^")" 
 			| MSub -> "MatrixMathematics.subtract("^string_of_expr e1^" ,"^string_of_expr e2^")" 
