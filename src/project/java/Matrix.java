@@ -1,10 +1,8 @@
-package matrix;
-
 public class Matrix {
 
 	private int nrows;
 	private int ncols;
-	private double[][] data;
+	public double[][] data;
 
 	public Matrix(double[][] dat) {
 		this.data = dat;

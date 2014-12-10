@@ -17,7 +17,7 @@ let string_of_dataType = function
 			
 let string_of_vdecl vdecl =  string_of_dataType vdecl.vtype ^ " " ^ vdecl.vname
 let string_of_mdecl mdecl = string_of_dataType mdecl.mtype ^ " " ^ mdecl.mname ^
-														"=new Matrix(" ^ string_of_int mdecl.mrow ^ ", " ^ string_of_int mdecl.mcol ^ ")"
+														"= new Matrix(" ^ string_of_int mdecl.mrow ^ ", " ^ string_of_int mdecl.mcol ^ ")"
 (*put struct id into the declaration list inside struct declaration*)
 let rec tuple_id (id,nums) = match nums with
 | [] -> []
@@ -40,11 +40,16 @@ let rec string_of_expr = function
 	| MatBinary_op(e1, o, e2) ->
       string_of_expr e1 ^ " " ^
       (match o with
-			MAdd -> "+." | MSub -> "-." | MTime -> "*." | MDivide -> "/."
-			) ^ " " ^
-      string_of_expr e2
+			MAdd -> "MatrixMathematics.add("^string_of_expr e1^" ,"^string_of_expr e2^")" 
+			| MSub -> "MatrixMathematics.subtract("^string_of_expr e1^" ,"^string_of_expr e2^")" 
+			| MTime -> "MatrixMathematics.multiply("^string_of_expr e1^" ,"^string_of_expr e2^")"  
+			| MDivide -> "MatrixMathematics.multiply("^string_of_expr e1^" ,"^"MatrixMathematics.inverse("^string_of_expr e2^"))"
+			| MITime  ->  "("^string_of_expr e1^").multiplyByConstant("^string_of_expr e2^")"
+			| MIDivide  ->  "("^string_of_expr e1^").multiplyByConstant(1.000/("^string_of_expr e2^"))"
+			) 
+      
   | VarAssign(v, e) -> string_of_expr v ^ " = " ^ string_of_expr e
-	| Matrix_element (v,e1,e2)->v ^"["^ string_of_expr e1^"]["^ string_of_expr e2^"] "
+	| Matrix_element (v,e1,e2)->v^".data" ^"["^ string_of_expr e1^"]["^ string_of_expr e2^"] "
   | Call(f, el) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> "void"
 	| Precedence_expr(e) -> "( " ^ string_of_expr e ^ " )"
@@ -96,5 +101,5 @@ let rec writeToFile fileName progString =
 let gen_program fileName prog = (*have a writetofile*)
   let programString = string_of_program_gen (fst prog ,snd prog ) in
   let out = sprintf 
-	"  \npublic class %s\n{\n%s\n}" fileName programString in
+	"\npublic class %s\n{\n%s\n}" fileName programString in
   	writeToFile fileName out

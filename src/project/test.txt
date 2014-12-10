@@ -5,8 +5,9 @@ b = True;
 
 Int main(Int argc, String argv) {
 	Structure s = { a = 1, b = 2, c = 3 };
-    Matrix m(1,1); 
-    m3 = (m +. m2) * 4;
+    Matrix m(1,1);
+        m[0][0]; 
+    m3 = (m +. m2) *.. 4;
     Option o = {a = "1"};
     o -> a="1";
     argc = 	s -> a;
