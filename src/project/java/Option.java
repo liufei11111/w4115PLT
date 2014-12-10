@@ -6,27 +6,27 @@ public class Option extends Struct {
     public Option(double strike, double stock, double interestRate,
             double period, double sigma) {
         this.valMap.put("strike", "" + strike);
-        this.typeMap.put("strike", "double");
+//        this.typeMap.put("strike", "double");
 
         this.valMap.put("stock", "" + stock);
-        this.typeMap.put("stock", "double");
+//        this.typeMap.put("stock", "double");
 
         this.valMap.put("interestRate", "" + interestRate);
-        this.typeMap.put("interestRate", "double");
+//        this.typeMap.put("interestRate", "double");
 
         this.valMap.put("period", "" + period);
-        this.typeMap.put("period", "double");
+//        this.typeMap.put("period", "double");
 
         this.valMap.put("sigma", "" + sigma);
-        this.typeMap.put("sigma", "double");
+//        this.typeMap.put("sigma", "double");
 
         this.valMap.put("optionType", "call");
-        this.typeMap.put("optionType", "String");
+//        this.typeMap.put("optionType", "String");
         d = new NormalDistribution(0, 1);
     }
 
     public void setValue(String type, String value, String propertyName) {
-        this.typeMap.put(propertyName, type);
+//        this.typeMap.put(propertyName, type);
         this.valMap.put(propertyName, value);
     }
 

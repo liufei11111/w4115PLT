@@ -12,13 +12,14 @@ b = True;
 public static int main(int argc, String argv)
 {
 Structure s = new Structure();
-s.put(a , 1);
- s.put(b , 2);
- s.put(c , 3);
+s.valMap.put("a" , 1);
+ s.valMap.put("b" , 2);
+ s.valMap.put("c" , 3);
 Matrix m=new Matrix(1, 1);
 m3 = ( m +. m2 ) * 4;
-Option o = {o.put(a , 1);
-o.get(a);
+Option  o = new Option();
+o.valMap.put("a" , "1");
+o.valMap.put("a","1");
 argc = s.get(a);
 if (i == 2 || i) {
   return argc;

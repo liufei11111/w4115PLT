@@ -51,7 +51,7 @@ let rec string_of_expr = function
 	| Struct_element(struct_id, element_id) -> struct_id ^ ".get(" ^ element_id^")"
 	| _ -> "space"
 (*string for struct*)
-let string_of_struct_arg (struct_id,arg) = struct_id^".put("^arg.id ^ " , " ^ string_of_expr arg.value^")"
+let string_of_struct_arg (struct_id,arg) = struct_id^".valMap.put(\""^arg.id ^ "\" , " ^ string_of_expr arg.value^")"
 
 (*string of statement*)	 
 let rec string_of_stmt = function
@@ -71,9 +71,11 @@ let rec string_of_stmt = function
 	^ struct_id ^ " = new Structure();\n" ^
 	 String.concat ";\n " 
 	(List.map (string_of_struct_arg ) (tuple_id (struct_id,(List.rev argList)) )) ^ ";\n"
-	| Optiondec (struct_id, argList) -> "Option " ^ struct_id ^ " = {" ^ 
-	String.concat ", " 
+	| Optiondec (struct_id, argList) -> "Option  " 
+	^ struct_id ^ " = new Option();\n" ^
+	 String.concat ";\n " 
 	(List.map (string_of_struct_arg ) (tuple_id (struct_id,(List.rev argList)) )) ^ ";\n"
+	| Struct_element_assign (struct_id,member_id, expr) ->  struct_id^".valMap.put(\"" ^member_id^"\","^string_of_expr expr^");\n" 
 (*function decoration*)	 
 let string_of_fdecl fdecl =
  "public static "^string_of_dataType fdecl.ret ^" " ^ fdecl.func_name ^ "(" 
