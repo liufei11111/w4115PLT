@@ -40,6 +40,7 @@ type expr =
 	| Bool_expr1 of expr * bool_op1 * expr
 	| Bool_expr2 of b_expr * bool_op2 * b_expr
 	| Precedence_bool_expr of b_expr*)
+	| Bool_lit of int
 	|	Noexpr
 
 type struct_arg = {
@@ -58,6 +59,7 @@ type stmt =
 	| Matdec of mat_dec
 	| Structdec of string * struct_arg list
 	| Optiondec of string * struct_arg list
+	| Struct_element_assign of string * string * expr
 
 
 type func_dec = {
@@ -122,6 +124,7 @@ let rec string_of_expr = function
   | Noexpr -> "void"
 	| Precedence_expr(e) -> "( " ^ string_of_expr e ^ " )"
 	| Struct_element(struct_id, element_id) -> struct_id ^ "->" ^ element_id
+	| Bool_lit(b) -> match b with | 1 -> " 1 " | 0 -> " 0 "
 	| _ -> "space"
 
 let string_of_struct_arg arg = arg.id ^ " = " ^ string_of_expr arg.value
@@ -156,7 +159,8 @@ let rec string_of_stmt = function
 	| Matdec(mdecl) -> string_of_mdecl mdecl ^ ";\n"
 	| Structdec (id, argList) -> "Structure " ^ id ^ " = {" ^ String.concat ", " (List.map string_of_struct_arg (List.rev argList)) ^ "};\n"
 	| Optiondec (id, argList) -> "Option " ^ id ^ " = {" ^ String.concat ", " (List.map string_of_struct_arg (List.rev argList)) ^ "};\n"
- 
+	| Struct_element_assign(id, i, e) -> id ^ " -> " ^ i ^ " = " ^ string_of_expr e ^ ";\n"
+
 	 
 let string_of_fdecl fdecl =
  string_of_dataType fdecl.ret ^" " ^ fdecl.func_name ^ "(" 

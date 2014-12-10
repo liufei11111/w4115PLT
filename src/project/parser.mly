@@ -112,6 +112,7 @@ stmt:
 	| mdecl SEMI { Matdec($1) }
 	| STRUCTURE ID ASSIGN LBRACE struct_arg_list RBRACE SEMI {Structdec($2, $5)}
 	| OPTION ID ASSIGN LBRACE struct_arg_list RBRACE SEMI {Optiondec($2, $5)}
+	| ID ARROW ID ASSIGN expr SEMI { Struct_element_assign($1, $3, $5) }
 
 expr_opt:
     /* nothing */ { Noexpr }
@@ -121,6 +122,8 @@ expr:
     INT_LIT          { Int_lit($1) }
 	| FLOAT_LIT 				{Float_lit($1)}
 	| STRING_LIT 				{String_lit($1)}
+	|	TRUE         { Bool_lit(1) }
+	| FALSE        { Bool_lit(0) }
   | ID               { Id($1) }
   | expr PLUS   expr { Binary_op($1, Add,   $3) }
   | expr MINUS  expr { Binary_op($1, Sub,   $3) }
