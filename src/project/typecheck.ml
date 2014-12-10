@@ -1,5 +1,6 @@
 open Ast
 open Sast
+(*TODO : check that global statements can only be declarations*)
 (****************************************** Debug Functions*)
 let print_var elem = print_endline (fst elem ^ "\t" ^ string_of_dataType (snd elem)^" is in scope")
 	
