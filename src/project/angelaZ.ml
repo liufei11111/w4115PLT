@@ -12,9 +12,9 @@
 type action = Ast | Sast | Java | Debug
 
 let _ =
-  let action = (*if Array.length Sys.argv > 1 then
-    List.assoc Sys.argv.(1) [ ("-a", Ast)(*; ("-s", Sast)*); ("-j", Java)(*; ("-d", Debug);*)]
-  else *)Java in
+  let action = if Array.length Sys.argv > 1 then
+    List.assoc Sys.argv.(1) [ ("-a", Ast); ("-s", Sast); ("-j", Java)(*; ("-d", Debug);*)]
+  else Java in
   let lexbuf = Lexing.from_channel stdin in
   let program = Parser.program Scanner.token lexbuf in
   match action with
@@ -29,10 +29,10 @@ let _ =
       print_string "\n******* SUBS ********\n";
       print_string (Sast.string_of_subs subs);
       print_string "\n******* INFERENCES ********\n";
-      print_string (Sast.string_of_inferred_prog aProgram)
+      print_string (Sast.string_of_inferred_prog aProgram)*)
   | Sast ->
-      let ap = Analyzer.infer_prog program in
-      print_string ("\n" ^ Sast.string_of_inferred_prog ap)*)
+  		let result = Typecheck.check_program program in
+  		()
   | Java ->
       (*let ap = Analyzer.infer_prog program in*)
       let _ = Javagen.gen_program "output" program in
