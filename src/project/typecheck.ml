@@ -1,10 +1,9 @@
 open Ast
 open Sast
-(*TODO : check that global statements can only be declarations*)
 (****************************************** Debug Functions*)
 let print_var elem = print_endline (fst elem ^ "\t" ^ string_of_dataType (snd elem)^" is in scope")
 	
-let rec print_vars_list = function (*string*dataType list*)
+let rec print_vars_list = function (*string*dataType list to print*)
 [] -> print_string "empty vars\n"
 | e::l -> print_var e ; print_vars_list l
 (**************************************Structure symbol table*)
@@ -35,6 +34,7 @@ let new_env : environment =
   let s = { variables = [];structs = []; options = []; parent = None }
   in
   {scope = s ; func_return_type = Void; functions = List.concat [core; utils];}
+	
 let inner_scope (env : environment) : environment =
   let s = { variables = []; structs = []; options = []; parent = Some(env.scope) } in
   { env with scope = s; }
@@ -47,44 +47,48 @@ let rec check_dup l = match l with
            check_dup t
         else
            true
+
 let is_keyword (var_name:string) = 
 	let keyword_set = ["main";"void"] in
 	try 
-		let re = List.find (fun x -> x=var_name ) keyword_set in
+		List.find (fun x -> x=var_name ) keyword_set;
 		true
 	with Not_found -> false
+
 let rec find_vars_exist (env_scope : symbol_table) (var_name : string) = 
   try
-    let (_, typ) = List.find (fun (s, _) -> s = var_name) env_scope.variables in
+    List.find (fun (s, _) -> s = var_name) env_scope.variables;
     true
   with Not_found ->
 		try 
-			let exist_struct = List.find (fun x ->x.struc_name =var_name) env_scope.structs in
+			List.find (fun x ->x.struc_name =var_name) env_scope.structs;
 			true
 		with Not_found ->
 			try
-  			let exist_option = List.find (fun x->x.option_name = var_name) env_scope.options in
+  			List.find (fun x->x.option_name = var_name) env_scope.options;
   			true
 			with Not_found ->
         (match env_scope.parent with
         | Some(p) -> find_vars_exist p var_name
         | _ -> false)
+
 let rec find_vars (env_scope : symbol_table) (var_name : string) : Ast.dataType= 
   try
     let (_, typ) = List.find (fun (s, _) -> s = var_name) env_scope.variables in
     typ
   with Not_found ->
 		try 
-			let exist_struct = List.find (fun x ->x.struc_name =var_name) env_scope.structs in
+			List.find (fun x ->x.struc_name =var_name) env_scope.structs;
 			Structure
 		with Not_found ->
 			try
-  			let exist_option = List.find (fun x->x.option_name = var_name) env_scope.options in
+  			List.find (fun x->x.option_name = var_name) env_scope.options;
   			Option
 			with Not_found ->
         (match env_scope.parent with
         | Some(p) -> find_vars p var_name
         | _ -> raise(Failure("Cannot find variable named " ^ var_name) ))
+
 let rec find_structs (env_scope : symbol_table) (var_name : string) =
 	try 
 		let struct_find = List.find (fun x -> x.struc_name = var_name) env_scope.structs in
@@ -93,6 +97,7 @@ let rec find_structs (env_scope : symbol_table) (var_name : string) =
 		match env_scope.parent with
         | Some(p) -> find_structs p var_name
         | _ -> raise(Failure("Cannot find option named " ^ var_name) )	
+
 let rec find_options (env_scope : symbol_table) (var_name : string) =
 	try 
 		let option_find = List.find (fun x -> x.option_name = var_name) env_scope.options in
@@ -100,33 +105,38 @@ let rec find_options (env_scope : symbol_table) (var_name : string) =
 	with Not_found ->
 		match env_scope.parent with
         | Some(p) -> find_options p var_name
-        | _ -> raise(Failure("Cannot find option named " ^ var_name) )			
+        | _ -> raise(Failure("Cannot find option named " ^ var_name) )		
+	
 let find_funcs_exist (env : environment) (var_name : string) = 
 	try
-    let (_, _, typ) = List.find (fun (s, _, _) -> s = var_name) env.functions in
+    List.find (fun (s, _, _) -> s = var_name) env.functions;
     true
   with Not_found -> false
+
 let find_funcs (env : environment) (var_name : string) = 
 	try
     let (_, _, typ) = List.find (fun (s, _, _) -> s = var_name) env.functions in
     typ
   with Not_found -> raise(Failure("Cannot find function named " ^ var_name) )
+
 let get_type (e : Sast.expr_t): Ast.dataType = 
   match e with 
-   Binary_op_t(e1,o,e2,t) -> t
-  | MatBinary_op_t(e1,o,e2,t) -> t
-  | Id_t(s,t) -> t
-  | Float_lit_t(s,t) -> t
-  | Int_lit_t(s,t) -> t
-  | String_lit_t(s,t) -> t
-  | Call_t(s, vl, t) ->t
-  | VarAssign_t(e1,e2,t)->t
-  | Matrix_element_t(s,e1,e2,t)->t 
-  | Precedence_expr_t(e1,t)->t 
-	| Struct_element_t(s1,s2,t)->t 
-	| Bool_lit_t(e1,t)->t
+   Binary_op_t(_,_,_,t) -> t
+  | MatBinary_op_t(_,_,_,t) -> t
+  | Id_t(_,t) -> t
+  | Float_lit_t(_,t) -> t
+  | Int_lit_t(_,t) -> t
+  | String_lit_t(_,t) -> t
+  | Call_t(_,_, t) ->t
+  | VarAssign_t(_,_,t)->t
+  | Matrix_element_t(_,_,_,t)->t 
+  | Precedence_expr_t(_,t)->t 
+	| Struct_element_t(_,_,t)->t 
+	| Bool_lit_t(_,t)->t
   | Noexpr_t(t)->t
+
 let get_formal_type (vardec : Ast.var_dec) : Ast.dataType  = vardec.vtype
+
 let addFormal (env: environment) (vardec : Ast.var_dec)  : unit= 
 	let v_name = vardec.vname in 
 	if is_keyword v_name
@@ -168,7 +178,6 @@ let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t =
 					then raise(Failure("Boolean should be the types around boolean operations"))
 				else Binary_op_t(e1_a, op, e2_a, e1_t)
 				)
-			
   | MatBinary_op(e1, op, e2) ->
 		let e1_a = annotate_expr env e1 in
 		let e2_a = annotate_expr env e2 in
@@ -183,14 +192,13 @@ let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t =
 				if (e1_t <> Matrix) || ((e2_t <> Int) && (e2_t <> Float))
 				then raise(Failure("MatrixElment operation has to be Matrix type on left side and Integer on the right side"))
 				else MatBinary_op_t(e1_a, op, e2_a, Matrix)
-				)
-				
+				)			
   | Id(s) ->
 		let typ = find_vars env.scope s in Id_t(s,typ)
   | Float_lit(f) ->Float_lit_t(f,Float)
   | Int_lit(i) ->Int_lit_t(i,Int)
   | String_lit(s) ->String_lit_t(s,String)
-  | Call(name, exl)-> 
+  | Call(name, exl)-> (*TODO handle built in function*)
       let exl_a = List.map (fun x -> annotate_expr env x) exl in
       let ret_type = find_funcs env name in
 				Call_t(name,exl_a,ret_type) (*TODO check the input variables are the same type*)
@@ -200,6 +208,7 @@ let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t =
 	| Matrix_element(s,me1,me2) -> check_matrix_elem env s me1 me2 
 	| Bool_lit(e1) -> Bool_lit_t(e1,Boolean)
   | _ -> Noexpr_t(Void)
+
 and check_matrix_elem (env : environment) (name:string)(e1:Ast.expr)(e2:Ast.expr) : Sast.expr_t = 
 	let var_type = find_vars env.scope name in
 	match var_type with
@@ -212,22 +221,24 @@ and check_matrix_elem (env : environment) (name:string)(e1:Ast.expr)(e2:Ast.expr
 		 	then raise(Failure("Indexes of Matrix must be of Int type"))
 		 else Matrix_element_t(name,e1_a,e2_a,Float)
 	| _ -> raise(Failure("Should be of Matrix type for accessing elements"))
+
 and check_struc_elem (env:environment) (name:string)(key:string) : Sast.expr_t = 
 	let var_type = find_vars env.scope name in
 	match var_type with
 	| Structure -> 
 		(let struc = find_structs env.scope name in
 		try 
-			let field = List.find (fun s -> s = key) struc.struc_fields in
+			List.find (fun s -> s = key) struc.struc_fields;
     	Struct_element_t(name,key,String)
   	with Not_found -> raise(Failure("Field "^key^" does not exist within struct")))
 	| Option -> 
 		(let opt = find_options env.scope name in
 		try 
-			let field = List.find (fun s -> s = key) opt.option_fields in
+			List.find (fun s -> s = key) opt.option_fields;
     	Struct_element_t(name,key,String)
   	with Not_found -> raise(Failure("Field "^key^" does not exist within struct")))
 	| _ -> raise(Failure("Should be of Structure type for accessing fields"))
+
 and annotate_assign (env : environment) (e1 : Ast.expr) (e2 : Ast.expr) : Sast.expr_t = (* For variable assign*)
   let e2_a = annotate_expr env e2 in 
   match e1 with
@@ -253,13 +264,14 @@ and annotate_assign (env : environment) (e1 : Ast.expr) (e2 : Ast.expr) : Sast.e
 		| _ -> raise(Failure("Only allow Float or Int assigned to Matrix element"))
 		)
 	|Struct_element(s1,s2)-> 
-		let struct_ele_a = check_struc_elem env s1 s2 in
+		check_struc_elem env s1 s2;
 		let value_type = get_type e2_a in
 		(match value_type with
 		|String -> VarAssign_t(Struct_element_t(s1,s2,String),e2_a,value_type)
 		|_ ->raise(Failure("Only String type can be assigned to structure"))
 		)
   | _ -> raise(Failure("Assignment need to be applied to a variable"))
+
 let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t = 
   match s with 
     Block(stmtlist) ->
@@ -288,12 +300,14 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
         | _ -> raise(Failure("Need assignment in for loop header"))) in
       let be_a = 
         (match be with
-        | Binary_op(be1,bop,be2) -> annotate_expr env be
-        | Noexpr -> Noexpr_t(Void)) in
+        | Binary_op(_,_,_) -> annotate_expr env be
+        | Noexpr -> Noexpr_t(Void)
+				| _ -> raise((Failure("condition expression within For loop is not required")))) in
       let ae2_a = 
         (match ae2 with
         | VarAssign(e1, e2) -> annotate_assign env e1 e2
-        | Noexpr -> Noexpr_t(Void)) in
+        | Noexpr -> Noexpr_t(Void)
+				| _ -> raise((Failure("there should be assign expression within for loop")))) in
       let body_a = annotate_stmt env body 
         in
 					if (get_type be_a<>Boolean) && (get_type be_a <> Void)
@@ -308,7 +322,7 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
 						then raise(Failure("there should be boolean expression within For"))
 					else
           While_t(be_a, body_a)       
-    | Return(e) ->(*TODO: watch to see if handle void return type*)
+    | Return(e) ->
       let e_a = annotate_expr env e 
       in 
         let return_type = get_type e_a
@@ -317,7 +331,7 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
           then raise(Failure("actual return type is not same with function return type"))
           else 
             Return_t(e_a)
-    | Vardec(vd) ->(*TODO and check whether it is void*)
+    | Vardec(vd) ->
       let var_type = vd.vtype in
       let var_name = vd.vname 
       in
@@ -333,7 +347,7 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
 								env.scope.variables <- env.scope.variables@[(var_name, var_type)];
 							(*	print_vars_list env.scope.variables;*)
               Vardec_t(vd, var_type))
-    | Matdec(md) ->(*TODO and check whether it is void*)
+    | Matdec(md) ->
       let var_type = md.mtype in
       let var_name = md.mname
       in
@@ -400,12 +414,14 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
                 Optiondec_t(var_name, starglist, Option))
 	  | Struct_element_assign(s1,s2,e) ->
 			let aste = Struct_element(s1,s2) in
-			let exprt = annotate_assign env aste e	in
+			annotate_assign env aste e;
 			Struct_element_assign_t(s1,s2,e,Structure)
+			
 and annotate_stmts  (env : environment) (stmts : Ast.stmt list) : Sast.stmt_t list =
   List.map (fun x -> (print_string (string_of_stmt x);annotate_stmt env x)) stmts	
+
 let annotate_func (env: environment) (func : Ast.func_dec) = 
-	let ret_type = func.ret in
+	let ret_type = func.ret in (*should change cooresponding fields in sast to avoid eryixing*)
 	let name = func.func_name in
   	if is_keyword name
           then raise(Failure("Cannot use keyword " ^ name ^ " as function name"))
@@ -416,20 +432,24 @@ let annotate_func (env: environment) (func : Ast.func_dec) =
                 then raise(Failure("Function name " ^ name ^ " already been used."))
               else 
   							let formals_list = func.formals in
-								 let addedList = List.iter (fun x -> addFormal env x) formals_list in
+								 List.iter (fun x -> addFormal env x) formals_list;
 								    let body_stmts = func.body in
-								      let body_a = annotate_stmts env body_stmts in
+								      annotate_stmts env body_stmts;
 								        let data_type_list = List.map (fun x-> get_formal_type x) formals_list in
 								          env.functions <- env.functions @ [(name,data_type_list,ret_type)]
 
 let annotate_funcs  (env : environment) (funcs : Ast.func_dec list)(*: Sast.func_dec_t list*)  = 
 	List.map (fun x -> annotate_func env x) funcs
+	
 (****************************************** Checking Program and main function exists *)
-(*TODO check whether main function exists*)
 let check_program (stmts, funcs) = 
 	let globals = List.rev stmts in
 	let functions = List.rev funcs in
 	let env = new_env in
-    let global_stmts_a = annotate_stmts env globals in
-    let funcs_a = annotate_funcs env functions in 
-    print_endline "\nSemantic analysis completed successfully."
+    annotate_stmts env globals;
+    annotate_funcs env functions;
+		let main_exist = find_funcs_exist env "main" in
+		if main_exist
+		  then print_endline "\nSemantic analysis completed successfully."
+		else
+			raise(Failure("Must declare main function"))

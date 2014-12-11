@@ -33,10 +33,10 @@ type stmt_t =
   | Struct_element_assign_t of string * string * expr * dataType
 
 type func_dec_t = {
-	ret : dataType;
-	func_name : string;
-	formals : var_dec list;
-	body : stmt_t list;
+	ret_t : dataType;
+	func_name_t : string;
+	formals_t : var_dec list;
+	body_t : stmt_t list;
 }
 
 type program_t = stmt_t list * func_dec_t list
