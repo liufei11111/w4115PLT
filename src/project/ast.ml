@@ -31,7 +31,9 @@ type expr =
 	| Int_lit of int
 	| String_lit of string
 	| Call of string * expr list (*ComputeSomething(v1,v2,v3);*)
-	| VarAssign of expr * expr			(* IDENTIFIER ASSIGN expr SEMICOLON *)
+	| VarAssign of string * expr			(* IDENTIFIER ASSIGN expr SEMICOLON *)
+	| Matrix_element_assign of string * expr * expr * expr
+	| Struct_element_assign of string * string * expr
 	| Matrix_element of string * expr * expr	(* IDENTIFIER LSQUARE expr RSQUARE LSQUARE expr RSQUARE*)
 	(*| MatrixCreate of expr * expr	(* dataType ID LBRACE expr COMMA expr RBRACE SEMICOLON*)	*)
 	| Precedence_expr of expr
@@ -59,7 +61,6 @@ type stmt =
 	| Matdec of mat_dec
 	| Structdec of string * struct_arg list
 	| Optiondec of string * struct_arg list
-	| Struct_element_assign of string * string * expr
 
 
 type func_dec = {
@@ -119,9 +120,11 @@ let rec string_of_expr = function
 			| MIAdd -> "+.." | MISub -> "-.." | MITime -> "*.." | MIDivide -> "/.."
 			) ^ " " ^
       string_of_expr e2
-  | VarAssign(v, e) -> string_of_expr v ^ " = " ^ string_of_expr e
+  | VarAssign(v, e) -> v ^ " = " ^ string_of_expr e
+ 	| Matrix_element_assign(id, r, c, e) -> id^ "["^ string_of_expr r^" , "^ string_of_expr c^ "] = "^ string_of_expr e
+	| Struct_element_assign(id, i, e) -> id^ " -> "^ i^ " = "^ string_of_expr e
 	| Matrix_element (v,e1,e2)->v ^"["^ string_of_expr e1^" , "^ string_of_expr e2^"] "
-  | Call(f, el) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
+	| Call(f, el) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> "void"
 	| Precedence_expr(e) -> "( " ^ string_of_expr e ^ " )"
 	| Struct_element(struct_id, element_id) -> struct_id ^ "->" ^ element_id
@@ -160,7 +163,6 @@ let rec string_of_stmt = function
 	| Matdec(mdecl) -> string_of_mdecl mdecl ^ ";\n"
 	| Structdec (id, argList) -> "Structure " ^ id ^ " = {" ^ String.concat ", " (List.map string_of_struct_arg (List.rev argList)) ^ "};\n"
 	| Optiondec (id, argList) -> "Option " ^ id ^ " = {" ^ String.concat ", " (List.map string_of_struct_arg (List.rev argList)) ^ "};\n"
-	| Struct_element_assign(id, i, e) -> id ^ " -> " ^ i ^ " = " ^ string_of_expr e ^ ";\n"
 
 	 
 let string_of_fdecl fdecl =
