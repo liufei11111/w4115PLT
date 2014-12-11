@@ -1,0 +1,4 @@
+String s;
+s = "sdf";
+String s1;
+s1 = s-"asdf";

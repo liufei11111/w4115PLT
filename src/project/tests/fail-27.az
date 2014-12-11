@@ -1,0 +1,2 @@
+Option o { a ="asdf" };
+o->b = "ad";
