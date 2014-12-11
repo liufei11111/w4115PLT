@@ -8,7 +8,7 @@ Matrix main2(Int argc, String argv) {
 	m[0][1]=2; 
 	m[1][0]=3;
 	m[1][1]=4;
-    m3 = ((m +. m) *. m) *.. 4;
+    m3 = (((m +. m) *. m) *.. 4)+.. 10;
     return m3;
 }
 
