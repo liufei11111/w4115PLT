@@ -1,8 +1,10 @@
 import org.apache.commons.math3.distribution.NormalDistribution;
 
-public class Option extends Struct {
+public class Option extends Structure {
     private static NormalDistribution d;
-
+    public Option(){
+        super();
+    }
     public Option(double strike, double stock, double interestRate,
             double period, double sigma) {
         this.valMap.put("strike", "" + strike);

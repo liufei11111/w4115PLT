@@ -66,7 +66,10 @@ let rec string_of_expr = function
       
   | VarAssign(v, e) -> string_of_expr v ^ " = " ^ string_of_expr e
 	| Matrix_element (v,e1,e2)->v^".data" ^"["^ string_of_expr e1^"]["^ string_of_expr e2^"] "
-  | Call(f, el) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
+  | Call(f, el) -> (match f with
+		| "printM" -> "("^String.concat ", " (List.map string_of_expr el)^").print()"
+		|_  ->  f^"(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
+		)
   | Noexpr -> "void"
 	| Precedence_expr(e) -> "( " ^ string_of_expr e ^ " )"
 	| Struct_element(struct_id, element_id) -> struct_id^".valMap" ^ ".get(\"" ^ element_id^"\")"

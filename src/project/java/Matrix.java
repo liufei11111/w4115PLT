@@ -80,4 +80,16 @@ public class Matrix {
 		}
 		return X_;
 	}
+	public void print(){
+	    for (int i=0;i<nrows;++i){
+	        for(int j=0;j<ncols;++j){
+	            System.out.print(data[i][j]);
+	            if (j!=ncols-1){
+	                System.out.print(", ");
+	            }
+	        }
+	        System.out.println();
+	    }
+	    System.out.println();
+	}
 }
