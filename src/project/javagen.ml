@@ -14,8 +14,25 @@ let string_of_dataType = function
 	| Boolean -> "boolean"
 	| Void -> "void"
 
-			
-let string_of_vdecl vdecl =  string_of_dataType vdecl.vtype ^ " " ^ vdecl.vname
+			(*type dataType =
+	| Int 
+	| Float
+	| String
+	| Matrix
+	| Option
+	| Structure
+	| Boolean
+	| Void*)
+let string_of_vdecl vdecl =  string_of_dataType vdecl.vtype ^ " " ^ vdecl.vname ^ match vdecl.vtype with
+| Int -> "=0"
+	| Float-> "=0.0"
+	| String -> "=null"
+	| Matrix-> ""
+	| Option -> ""
+	| Structure -> ""
+	| Boolean -> "=false"
+	| Void  -> ""
+let string_of_vdecl_argument vdecl =  string_of_dataType vdecl.vtype ^ " " ^ vdecl.vname 
 let string_of_mdecl mdecl = string_of_dataType mdecl.mtype ^ " " ^ mdecl.mname ^
 														"= new Matrix(" ^ string_of_int mdecl.mrow ^ ", " ^ string_of_int mdecl.mcol ^ ")"
 (*put struct id into the declaration list inside struct declaration*)
@@ -83,9 +100,20 @@ let rec string_of_stmt = function
 (*function decoration*)	 
 let string_of_fdecl fdecl =
  "public static "^string_of_dataType fdecl.ret ^" " ^ fdecl.func_name ^ "(" 
-^ String.concat ", " (List.map string_of_vdecl fdecl.formals) ^ ")\n{\n" ^
+^ String.concat ", " (List.map string_of_vdecl_argument fdecl.formals) ^ ")\n{\ntry{" ^
 	String.concat "" (List.map string_of_stmt fdecl.body) ^
-  "}\n"
+	(*exception simply exits*)
+  "}catch(Exception e){"^(match fdecl.ret with
+| Int -> "return -1"
+	| Float-> "return 0.0"
+	| String -> "return null"
+	| Matrix-> "return null"
+	| Option -> "return null"
+	| Structure -> "return null"
+	| Boolean -> "return false"
+	| Void  -> "return "
+	)
+	^";}}\n"
 (*convert ast into string*)
 let string_of_program_gen (stmts, funcs)=
   String.concat "\n" (List.map string_of_stmt (List.rev stmts)) ^ "\n" ^
@@ -100,5 +128,5 @@ let rec writeToFile fileName progString =
 let gen_program fileName prog = (*have a writetofile*)
   let programString = string_of_program_gen (fst prog ,snd prog ) in
   let out = sprintf 
-	"\npublic class %s\n{\n%s%s\n}" fileName programString "public static void main(String[] args){ main(0,\"\");}" in
+	"\npublic class %s\n{\n%s%s\n}" fileName programString "public static void main(String[] args){ try{main(0,\"\");}catch(Exception e){return ;}}" in
   	writeToFile fileName out

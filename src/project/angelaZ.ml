@@ -35,7 +35,7 @@ let _ =
   		()
   | Java ->
       (*let ap = Analyzer.infer_prog program in*)
-      let _ = Javagen.gen_program "output" program in
+      let _ = Javagen.gen_program "Output" program in
       print_string "Success! Compiled to java/output.java\n"
 (* | Ast -> 
       print_string (Ast.string_of_program program)*)
