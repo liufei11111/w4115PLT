@@ -31,6 +31,7 @@ let string_of_vdecl vdecl =  string_of_dataType vdecl.vtype ^ " " ^ vdecl.vname 
 	| Structure -> ""
 	| Boolean -> "=false"
 	| Void  -> ""
+
 let string_of_vdecl_argument vdecl =  string_of_dataType vdecl.vtype ^ " " ^ vdecl.vname 
 let string_of_mdecl mdecl = string_of_dataType mdecl.mtype ^ " " ^ mdecl.mname ^
 														"= new Matrix(" ^ string_of_int mdecl.mrow ^ ", " ^ string_of_int mdecl.mcol ^ ")"
@@ -64,13 +65,15 @@ let rec string_of_expr_javagen = function
 			| MIAdd  ->  "("^string_of_expr_javagen e1^").addByConstant("^string_of_expr_javagen e2^")"
 			| MISub  ->  "("^string_of_expr_javagen e1^").addByConstant(-1*("^string_of_expr_javagen e2^"))"
 			) 
-      
-  | VarAssign(v, e) -> string_of_expr_javagen v ^ " = " ^ string_of_expr_javagen e
+   (* assign codes *)   
+  | VarAssign(v, e) -> v ^ " = " ^ string_of_expr_javagen e
+	| Matrix_element_assign (id,indexR,indexC,assignV)-> id^".data" ^"["^ string_of_expr_javagen indexR^"]["^ string_of_expr_javagen indexC^"] = "^string_of_expr_javagen assignV
+	| Struct_element_assign (struct_id,member_id, expr) ->  struct_id^".valMap.put(\"" ^member_id^"\","^string_of_expr_javagen expr^");\n" 
 	| Matrix_element (v,e1,e2)->v^".data" ^"["^ string_of_expr_javagen e1^"]["^ string_of_expr_javagen e2^"] "
 	(* functions that are built in are listed here*)
   | Call(f, el) -> (match f with
 		| "printM" -> "("^String.concat ", " (List.map string_of_expr_javagen el)^").print()"
-		(*| "toInt" -> "Integer.parseInt("^String.concat ", " (List.map (int_of_string  el)))^")"*)
+		| "toInt" -> "Integer.parseInt("^String.concat ", " (List.map string_of_expr_javagen  el)^")"
 		|_  ->  f^"(" ^ String.concat ", " (List.map string_of_expr_javagen el) ^ ")"
 		)
   | Noexpr -> "void"
@@ -102,7 +105,6 @@ let rec string_of_stmt = function
 	^ struct_id ^ " = new Option();\n" ^
 	 String.concat ";\n " 
 	(List.map (string_of_struct_arg ) (tuple_id (struct_id,(List.rev argList)) )) ^ ";\n"
-	| Struct_element_assign (struct_id,member_id, expr) ->  struct_id^".valMap.put(\"" ^member_id^"\","^string_of_expr_javagen expr^");\n" 
 (*function decoration*)	 
 let string_of_fdecl fdecl =
  "public static "^string_of_dataType fdecl.ret ^" " ^ fdecl.func_name ^ "(" 
