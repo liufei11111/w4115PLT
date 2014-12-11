@@ -112,7 +112,6 @@ stmt:
 	| mdecl SEMI { Matdec($1) }
 	| STRUCTURE ID ASSIGN LBRACE struct_arg_list RBRACE SEMI {Structdec($2, $5)}
 	| OPTION ID ASSIGN LBRACE struct_arg_list RBRACE SEMI {Optiondec($2, $5)}
-	| ID ARROW ID ASSIGN expr SEMI { Struct_element_assign($1, $3, $5) }
 
 expr_opt:
     /* nothing */ { Noexpr }
@@ -137,7 +136,9 @@ expr:
   | expr MIMINUS  expr { MatBinary_op($1, MISub,   $3) }
   | expr MITIMES  expr { MatBinary_op($1, MITime,  $3) }
   | expr MIDIVIDE expr { MatBinary_op($1, MIDivide,   $3) }
-  | expr ASSIGN expr   { VarAssign($1, $3) }
+  | ID ASSIGN expr   { VarAssign($1, $3) }
+	| ID LSQUARE expr RSQUARE LSQUARE  expr RSQUARE ASSIGN expr   { Matrix_element_assign($1, $3, $6, $9) }
+	| ID ARROW ID ASSIGN expr { Struct_element_assign($1, $3, $5) }
 	| ID LSQUARE expr RSQUARE LSQUARE  expr RSQUARE  { Matrix_element($1, $3, $6) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { Precedence_expr($2) }
