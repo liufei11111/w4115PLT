@@ -15,8 +15,8 @@ c = a + (1 + a);
 c = (1 + a) * (1 + b);
 c = (a + b);
 
-b1 = True;
-b2 = False;
+b1 = true;
+b2 = false;
 b3 = b1 && (b1 || b2);
 b3 = (b1 && b1 && b1);
 
