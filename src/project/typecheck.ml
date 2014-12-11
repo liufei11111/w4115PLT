@@ -202,7 +202,11 @@ let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t =
       let exl_a = List.map (fun x -> annotate_expr env x) exl in
       let ret_type = find_funcs env name in
 				Call_t(name,exl_a,ret_type) (*TODO check the input variables are the same type*)
-  | VarAssign(e1, e2)->  annotate_assign env e1 e2
+  | VarAssign(s, e2)->  let exp = Id(s) in annotate_assign env exp e2
+	| Matrix_element_assign(s, e1, e2, e3) ->
+		let exp = Matrix_element(s, e1, e2) in annotate_assign env exp e3
+	| Struct_element_assign(s1, s2, e) ->
+	  let exp = Struct_element(s1, s2) in annotate_assign env exp e
   | Precedence_expr(e) -> annotate_expr env e
 	| Struct_element(s1,s2) -> check_struc_elem env s1 s2
 	| Matrix_element(s,me1,me2) -> check_matrix_elem env s me1 me2 
@@ -239,7 +243,7 @@ and check_struc_elem (env:environment) (name:string)(key:string) : Sast.expr_t =
   	with Not_found -> raise(Failure("Field "^key^" does not exist within struct")))
 	| _ -> raise(Failure("Should be of Structure type for accessing fields"))
 
-and annotate_assign (env : environment) (e1 : Ast.expr) (e2 : Ast.expr) : Sast.expr_t = (* For variable assign*)
+and annotate_assign (env : environment) (e1 : Ast.expr) (e2 : Ast.expr) : Sast.expr_t =
   let e2_a = annotate_expr env e2 in 
   match e1 with
   | Id(x) -> 
@@ -255,19 +259,23 @@ and annotate_assign (env : environment) (e1 : Ast.expr) (e2 : Ast.expr) : Sast.e
         then raise(Failure("variable "^x^" need to be assigned with same type"))
         else VarAssign_t(Id_t(x, e1_type), e2_a, e2_type)
       )
-	|Matrix_element(s,me1,me2)->
+	| Matrix_element(s,me1,me2)->
 		let elem_t = check_matrix_elem env s me1 me2 in
-		let value_type = get_type e2_a in
-		(match value_type with
-		| Float -> VarAssign_t(elem_t, e2_a, Float)
-		| Int -> VarAssign_t(elem_t,e2_a,Float)
+		let e2_type = get_type e2_a in
+		(match e2_type with
+		|Float|Int -> 
+			let me1_a = annotate_expr env me1 in 
+			let me2_a = annotate_expr env me2 in
+			if (get_type me1_a = Int) && (get_type me2_a = Int)
+				then Matrix_element_assign_t(s, me1_a, me2_a, e2_a, Float)
+			else raise(Failure("Matrix indexing has to be of type int"))
 		| _ -> raise(Failure("Only allow Float or Int assigned to Matrix element"))
 		)
-	|Struct_element(s1,s2)-> 
+	| Struct_element(s1,s2)-> 
 		check_struc_elem env s1 s2;
 		let value_type = get_type e2_a in
 		(match value_type with
-		|String -> VarAssign_t(Struct_element_t(s1,s2,String),e2_a,value_type)
+		|String -> Struct_element_assign_t(s1,s2,e2_a,String)
 		|_ ->raise(Failure("Only String type can be assigned to structure"))
 		)
   | _ -> raise(Failure("Assignment need to be applied to a variable"))
@@ -294,8 +302,8 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
           If_t(be_a, body1_a, body2_a)
     | For(ae1, be, ae2, body)->
       let ae1_a = 
-        (match ae1 with
-        | VarAssign(e1, e2) -> annotate_assign env e1 e2
+        (match ae1 with (*For other assign*)
+        | VarAssign(s, e2) -> let exp = Id(s) in annotate_assign env exp e2
         | Noexpr -> Noexpr_t(Void)
         | _ -> raise(Failure("Need assignment in for loop header"))) in
       let be_a = 
@@ -305,7 +313,7 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
 				| _ -> raise((Failure("condition expression within For loop is not required")))) in
       let ae2_a = 
         (match ae2 with
-        | VarAssign(e1, e2) -> annotate_assign env e1 e2
+        | VarAssign(s, e2) -> let exp = Id(s) in annotate_assign env exp e2
         | Noexpr -> Noexpr_t(Void)
 				| _ -> raise((Failure("there should be assign expression within for loop")))) in
       let body_a = annotate_stmt env body 
@@ -412,10 +420,6 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
 								else
 									( env.scope.options<-env.scope.options@[{option_name=var_name; option_fields=fields}];
                 Optiondec_t(var_name, starglist, Option))
-	  | Struct_element_assign(s1,s2,e) ->
-			let aste = Struct_element(s1,s2) in
-			annotate_assign env aste e;
-			Struct_element_assign_t(s1,s2,e,Structure)
 			
 and annotate_stmts  (env : environment) (stmts : Ast.stmt list) : Sast.stmt_t list =
   List.map (fun x -> (print_string (string_of_stmt x);annotate_stmt env x)) stmts	
