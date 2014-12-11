@@ -274,6 +274,9 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
         Expr_t(expr_a)
     | If(be, body1, body2) ->
       let be_a = annotate_expr env be in
+				if (get_type be_a) <> Boolean
+					then raise(Failure("there should be boolean expression within If"))
+				else 
         let body1_a = annotate_stmt env body1 in
         let body2_a = annotate_stmt env body2 in
           If_t(be_a, body1_a, body2_a)
@@ -293,11 +296,17 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
         | Noexpr -> Noexpr_t(Void)) in
       let body_a = annotate_stmt env body 
         in
+					if (get_type be_a<>Boolean) && (get_type be_a <> Void)
+						then raise(Failure("there should be boolean expression within For"))
+					else
           For_t(ae1_a, be_a, ae2_a, body_a)
     | While(be, body)  ->
       let be_a = annotate_expr env be in
       let body_a = annotate_stmt env body 
         in
+				  if (get_type be_a<>Boolean) && (get_type be_a <> Void)
+						then raise(Failure("there should be boolean expression within For"))
+					else
           While_t(be_a, body_a)       
     | Return(e) ->(*TODO: watch to see if handle void return type*)
       let e_a = annotate_expr env e 
