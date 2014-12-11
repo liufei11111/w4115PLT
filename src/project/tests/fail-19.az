@@ -1,0 +1,4 @@
+Int a;
+a = 0;
+Boolean b;
+b = a;

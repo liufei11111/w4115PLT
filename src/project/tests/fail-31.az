@@ -1,0 +1,5 @@
+String s;
+s = "sdf";
+String s1;
+s1 = s;
+String s2 = s1 + s;
