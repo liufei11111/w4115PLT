@@ -32,7 +32,11 @@ let new_env : environment =
   let core =[("toString", [String], String);("toString", [Int], String);
 						("toString", [Float], String);("toString", [Matrix], String);
 						("toString", [Structure], String);("toString", [Option], String);
-						("toString", [Boolean], String);("printM", [Matrix], Void)] in 
+						("toString", [Boolean], String);("printM", [Matrix], Void);
+						("print", [String], Void);("print", [Int], String);
+						("print", [Float], Void);("print", [Matrix], Void);
+						("print", [Structure], Void);("print", [Option], Void);
+						("print", [Boolean], Void);("toInt", [String], Int);] in 
   let s = { variables = [];structs = []; options = []; parent = None }
   in
   {scope = s ; func_return_type = Void; functions = core;}
