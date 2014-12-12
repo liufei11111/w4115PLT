@@ -32,7 +32,7 @@ let new_env : environment =
   let core =[("toString", [String], String);("toString", [Int], String);
 						("toString", [Float], String);("toString", [Matrix], String);
 						("toString", [Structure], String);("toString", [Option], String);
-						("toString", [Boolean], String)] in 
+						("toString", [Boolean], String);("printM", [Matrix], Void)] in 
   let s = { variables = [];structs = []; options = []; parent = None }
   in
   {scope = s ; func_return_type = Void; functions = core;}
@@ -208,7 +208,7 @@ let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t =
   | Float_lit(f) ->Float_lit_t(f,Float)
   | Int_lit(i) ->Int_lit_t(i,Int)
   | String_lit(s) ->String_lit_t(s,String)
-  | Call(name, exl)-> (*TODO handle built in function*)
+  | Call(name, exl)->
       let exl_a = List.map (fun x -> annotate_expr env x) exl in
 			let arglist = List.map (fun x -> get_type x) exl_a in
       let ret_type = find_funcs env name arglist in
@@ -355,7 +355,7 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
         let return_type = get_type e_a
         in
           if return_type <> env.func_return_type
-          then raise(Failure("actual return type is not same with function return type"))
+          then raise(Failure("actual return type is not same with function return type: " ^ string_of_dataType env.func_return_type))
           else 
             Return_t(e_a)
     | Vardec(vd) ->
@@ -451,9 +451,9 @@ let annotate_global_stmts (env : environment) (stmts : Ast.stmt list) : Sast.stm
 		) stmts	
 
 let annotate_func (env: environment) (func : Ast.func_dec) = 
-	let ret_type = func.ret in (*should change cooresponding fields in sast to avoid eryixing*)
+	let ret_type = func.ret in
 	let name = func.func_name in
-  	if is_keyword name
+  	if is_keyword name && name <> "main"
           then raise(Failure("Cannot use keyword " ^ name ^ " as function name"))
     else 
         let exist_f = find_funcs_exist env name
@@ -461,10 +461,12 @@ let annotate_func (env: environment) (func : Ast.func_dec) =
               if exist_f 
                 then raise(Failure("Function name " ^ name ^ " already been used."))
               else 
-  							let formals_list = func.formals in
-								 List.iter (fun x -> addFormal env x) formals_list;
+								let inner_env = inner_scope env in
+								 inner_env.func_return_type <- ret_type;
+  							 let formals_list = func.formals in
+								  List.iter (fun x -> addFormal inner_env x) formals_list;
 								    let body_stmts = func.body in
-								      annotate_stmts env body_stmts;
+								      annotate_stmts inner_env body_stmts;
 								        let data_type_list = List.map (fun x-> get_formal_type x) formals_list in
 								          env.functions <- env.functions @ [(name,data_type_list,ret_type)]
 
