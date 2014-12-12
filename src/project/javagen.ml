@@ -32,6 +32,17 @@ let string_of_vdecl vdecl =  string_of_dataType vdecl.vtype ^ " " ^ vdecl.vname 
 	| Boolean -> "=false"
 	| Void  -> ""
 
+let string_of_global_vdecl vdecl =  "static "^string_of_dataType vdecl.vtype ^ " " ^ vdecl.vname ^ match vdecl.vtype with
+| Int -> "=0"
+	| Float-> "=0.0"
+	| String -> "=null"
+	| Matrix-> ""
+	| Option -> ""
+	| Structure -> ""
+	| Boolean -> "=false"
+	| Void  -> ""
+
+
 let string_of_vdecl_argument vdecl =  string_of_dataType vdecl.vtype ^ " " ^ vdecl.vname 
 let string_of_mdecl mdecl = string_of_dataType mdecl.mtype ^ " " ^ mdecl.mname ^
 														"= new Matrix(" ^ string_of_int mdecl.mrow ^ ", " ^ string_of_int mdecl.mcol ^ ")"
@@ -54,6 +65,7 @@ let rec string_of_expr_javagen = function
 			| And -> "&&" | Or -> "||" 
       ) ^ " " ^
       string_of_expr_javagen e2
+			(*matrix binary operations*)
 	| MatBinary_op(e1, o, e2) ->
       (match o with
 			MAdd -> "MatrixMathematics.add("^string_of_expr_javagen e1^" ,"^string_of_expr_javagen e2^")" 
@@ -74,6 +86,7 @@ let rec string_of_expr_javagen = function
   | Call(f, el) -> (match f with
 		| "printM" -> "("^String.concat ", " (List.map string_of_expr_javagen el)^").print()"
 		| "toInt" -> "Integer.parseInt("^String.concat ", " (List.map string_of_expr_javagen  el)^")"
+		| "toString" -> "ToString.toString(" ^ String.concat ", " (List.map string_of_expr_javagen  el)^")"
 		|_  ->  f^"(" ^ String.concat ", " (List.map string_of_expr_javagen el) ^ ")"
 		)
   | Noexpr -> "void"
@@ -82,7 +95,10 @@ let rec string_of_expr_javagen = function
 	| _ -> "space"
 (*string for struct*)
 let string_of_struct_arg (struct_id,arg) = struct_id^".valMap.put(\""^arg.id ^ "\" , " ^ string_of_expr_javagen arg.value^")"
-
+(*string of global statement*)	 
+let rec string_of_global_stmt = function
+	Vardec(vdecl) -> string_of_global_vdecl vdecl ^ ";\n"
+	| _  -> ""
 (*string of statement*)	 
 let rec string_of_stmt = function
     Block(stmts) -> "{\n  " ^ String.concat "  " (List.map string_of_stmt stmts) ^ "}\n"
@@ -97,7 +113,7 @@ let rec string_of_stmt = function
   | While(e, s) -> "while (" ^ string_of_expr_javagen e ^ ") " ^ string_of_stmt s
 	| Vardec(vdecl) -> string_of_vdecl vdecl ^ ";\n"
 	| Matdec(mdecl) -> string_of_mdecl mdecl ^ ";\n"
-	| Structdec (struct_id, argList) -> "Structure " 
+	| Structdec(struct_id, argList) -> "Structure " 
 	^ struct_id ^ " = new Structure();\n" ^
 	 String.concat ";\n " 
 	(List.map (string_of_struct_arg ) (tuple_id (struct_id,(List.rev argList)) )) ^ ";\n"
@@ -124,7 +140,7 @@ let string_of_fdecl fdecl =
 	^";}}\n"
 (*convert ast into string*)
 let string_of_program_gen (stmts, funcs)=
-  String.concat "\n" (List.map string_of_stmt (List.rev stmts)) ^ "\n" ^
+  String.concat "\n" (List.map string_of_global_stmt (List.rev stmts)) ^ "\n" ^
   String.concat "\n" (List.map string_of_fdecl (List.rev funcs)) ^ "\n" 
 (*io function*)
 

@@ -5,6 +5,7 @@ public class Option extends Structure {
     public Option(){
         super();
     }
+
     public Option(double strike, double stock, double interestRate,
             double period, double sigma) {
         this.valMap.put("strike", "" + strike);
@@ -66,4 +67,5 @@ public class Option extends Structure {
                     * Math.exp(-1 * interestRate * period)-cumND1 * stock;
         }
     }
+    
 }

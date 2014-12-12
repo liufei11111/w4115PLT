@@ -1,0 +1,13 @@
+Int i;
+Boolean b;
+
+Structure main2(Int argc, String argv) {
+	Structure s={a="1", b= toString(argc)};
+	i=toInt(s -> a);
+	return s;
+}
+
+Void main(Int argc2, String m) {
+	Int result;
+	result=main2(0, "str");
+}
