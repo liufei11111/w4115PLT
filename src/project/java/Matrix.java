@@ -68,16 +68,6 @@ public class Matrix {
         return mat;
     }
 
-    public Matrix addByConstant(double constant) {
-        Matrix mat = new Matrix(nrows, ncols);
-        for (int i = 0; i < nrows; i++) {
-            for (int j = 0; j < ncols; j++) {
-                mat.setValueAt(i, j, data[i][j] + constant);
-            }
-        }
-        return mat;
-    }
-
     public Matrix insertColumnWithValue1() {
         Matrix X_ = new Matrix(this.getNrows(), this.getNcols() + 1);
         for (int i = 0; i < X_.getNrows(); i++) {
@@ -103,5 +93,31 @@ public class Matrix {
             System.out.println();
         }
         System.out.println();
+    }
+
+    public Matrix addByConstant(int constant) {
+        Matrix mat = new Matrix(nrows, ncols);
+        for (int i = 0; i < nrows; i++) {
+            for (int j = 0; j < ncols; j++) {
+                mat.setValueAt(i, j, data[i][j] + constant);
+            }
+        }
+        return mat;
+    }
+
+    public String toString() {
+        String result = "{";
+        for (int i = 0; i < nrows; i++) {
+            result += "[";
+            for (int j = 0; j < ncols; j++) {
+                result += data[i][j] + ", ";
+            }
+            if (i == nrows - 1)
+                result += "], ";
+            else
+                result += "]";
+        }
+        result+="}";
+        return result;
     }
 }
