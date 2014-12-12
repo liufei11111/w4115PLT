@@ -8,6 +8,7 @@ Structure main2(Int argc, String argv) {
 }
 
 Void main(Int argc2, String m) {
-	Int result;
+	Structure result;
 	result=main2(0, "str");
+	print(result);
 }

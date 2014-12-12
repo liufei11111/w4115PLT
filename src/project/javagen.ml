@@ -87,6 +87,7 @@ let rec string_of_expr_javagen = function
 		| "printM" -> "("^String.concat ", " (List.map string_of_expr_javagen el)^").print()"
 		| "toInt" -> "Integer.parseInt("^String.concat ", " (List.map string_of_expr_javagen  el)^")"
 		| "toString" -> "ToString.toString(" ^ String.concat ", " (List.map string_of_expr_javagen  el)^")"
+		| "print" -> "System.out.println(ToString.toString(" ^ String.concat ", " (List.map string_of_expr_javagen  el)^"))"
 		|_  ->  f^"(" ^ String.concat ", " (List.map string_of_expr_javagen el) ^ ")"
 		)
   | Noexpr -> "void"
