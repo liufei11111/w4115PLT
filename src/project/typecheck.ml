@@ -30,10 +30,9 @@ type environment = {
 (****************************************** Initial*)
 let new_env : environment = 
   let core =[("print", [String], Void)] in 
-  let utils = [("size", [String], Int)] in
   let s = { variables = [];structs = []; options = []; parent = None }
   in
-  {scope = s ; func_return_type = Void; functions = List.concat [core; utils];}
+  {scope = s ; func_return_type = Void; functions = core;}
 	
 let inner_scope (env : environment) : environment =
   let s = { variables = []; structs = []; options = []; parent = Some(env.scope) } in
@@ -129,6 +128,8 @@ let get_type (e : Sast.expr_t): Ast.dataType =
   | String_lit_t(_,t) -> t
   | Call_t(_,_, t) ->t
   | VarAssign_t(_,_,t)->t
+	| Matrix_element_assign_t (_,_,_,_,t) -> t
+	| Struct_element_assign_t (_,_,_,t) -> t
   | Matrix_element_t(_,_,_,t)->t 
   | Precedence_expr_t(_,t)->t 
 	| Struct_element_t(_,_,t)->t 
@@ -304,6 +305,10 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
       let ae1_a = 
         (match ae1 with (*For other assign*)
         | VarAssign(s, e2) -> let exp = Id(s) in annotate_assign env exp e2
+				| Matrix_element_assign(s, e1, e2, e3) ->
+					let exp = Matrix_element(s, e1, e2) in annotate_assign env exp e3
+				| Struct_element_assign(s1, s2, e) ->
+	  			let exp = Struct_element(s1, s2) in annotate_assign env exp e
         | Noexpr -> Noexpr_t(Void)
         | _ -> raise(Failure("Need assignment in for loop header"))) in
       let be_a = 
@@ -314,6 +319,10 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
       let ae2_a = 
         (match ae2 with
         | VarAssign(s, e2) -> let exp = Id(s) in annotate_assign env exp e2
+				| Matrix_element_assign(s, e1, e2, e3) ->
+					let exp = Matrix_element(s, e1, e2) in annotate_assign env exp e3
+				| Struct_element_assign(s1, s2, e) ->
+	  			let exp = Struct_element(s1, s2) in annotate_assign env exp e
         | Noexpr -> Noexpr_t(Void)
 				| _ -> raise((Failure("there should be assign expression within for loop")))) in
       let body_a = annotate_stmt env body 
@@ -424,6 +433,13 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
 and annotate_stmts  (env : environment) (stmts : Ast.stmt list) : Sast.stmt_t list =
   List.map (fun x -> (print_string (string_of_stmt x);annotate_stmt env x)) stmts	
 
+let annotate_global_stmts (env : environment) (stmts : Ast.stmt list) : Sast.stmt_t list = 
+	List.map (fun x -> 
+		(match x with
+		|Vardec(_)| Matdec(_)| Structdec(_,_)| Optiondec (_,_) -> (print_string (string_of_stmt x));annotate_stmt env x
+		| _ -> raise(Failure("Global statements can only be variable declaration")))
+		) stmts	
+
 let annotate_func (env: environment) (func : Ast.func_dec) = 
 	let ret_type = func.ret in (*should change cooresponding fields in sast to avoid eryixing*)
 	let name = func.func_name in
@@ -450,7 +466,7 @@ let check_program (stmts, funcs) =
 	let globals = List.rev stmts in
 	let functions = List.rev funcs in
 	let env = new_env in
-    annotate_stmts env globals;
+    annotate_global_stmts env globals;
     annotate_funcs env functions;
 		let main_exist = find_funcs_exist env "main" in
 		if main_exist
