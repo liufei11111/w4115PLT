@@ -29,7 +29,10 @@ type environment = {
 }
 (****************************************** Initial*)
 let new_env : environment = 
-  let core =[("print", [String], Void)] in 
+  let core =[("toString", [String], String);("toString", [Int], String);
+						("toString", [Float], String);("toString", [Matrix], String);
+						("toString", [Structure], String);("toString", [Option], String);
+						("toString", [Boolean], String)] in 
   let s = { variables = [];structs = []; options = []; parent = None }
   in
   {scope = s ; func_return_type = Void; functions = core;}
@@ -46,6 +49,11 @@ let rec check_dup l = match l with
            check_dup t
         else
            true
+
+let rec samelists l1 l2 = match l1, l2 with
+| [], []       -> true
+| [], _ | _, []        -> false
+| x::xs, y::ys -> x = y && samelists xs ys
 
 let is_keyword (var_name:string) = 
 	let keyword_set = ["main";"void"] in
@@ -112,9 +120,10 @@ let find_funcs_exist (env : environment) (var_name : string) =
     true
   with Not_found -> false
 
-let find_funcs (env : environment) (var_name : string) = 
+let find_funcs (env : environment) (var_name : string) (arglist : Ast.dataType list)= 
 	try
-    let (_, _, typ) = List.find (fun (s, _, _) -> s = var_name) env.functions in
+    let (_, _, typ) = List.find (fun (s, forlist, _) ->
+																 s = var_name && samelists forlist arglist) env.functions in
     typ
   with Not_found -> raise(Failure("Cannot find function named " ^ var_name) )
 
@@ -201,8 +210,9 @@ let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t =
   | String_lit(s) ->String_lit_t(s,String)
   | Call(name, exl)-> (*TODO handle built in function*)
       let exl_a = List.map (fun x -> annotate_expr env x) exl in
-      let ret_type = find_funcs env name in
-				Call_t(name,exl_a,ret_type) (*TODO check the input variables are the same type*)
+			let arglist = List.map (fun x -> get_type x) exl_a in
+      let ret_type = find_funcs env name arglist in
+				Call_t(name,exl_a,ret_type)
   | VarAssign(s, e2)->  let exp = Id(s) in annotate_assign env exp e2
 	| Matrix_element_assign(s, e1, e2, e3) ->
 		let exp = Matrix_element(s, e1, e2) in annotate_assign env exp e3
