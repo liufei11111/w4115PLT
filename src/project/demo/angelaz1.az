@@ -4,11 +4,11 @@ Boolean b;
 Matrix main2(Int argc, String argv) {
 	Matrix m3(2,2);
     Matrix m(2,2);
-	m[0][0]=1; 
-	m[0][1]=2; 
+	m[0][0]=1;
+	m[0][1]=2;
 	m[1][0]=3;
 	m[1][1]=4;
-    m3 = (((m +. m) *. m) *.. 4)+.. 10;
+    m3 = (((m +. m') *. m~) *.. 4)+.. m^;
     return m3;
 }
 

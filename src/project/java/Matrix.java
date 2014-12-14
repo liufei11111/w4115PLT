@@ -120,4 +120,14 @@ public class Matrix {
         result+="}";
         return result;
     }
+
+    public Matrix addByConstant(double constant) {
+        Matrix mat = new Matrix(nrows, ncols);
+        for (int i = 0; i < nrows; i++) {
+            for (int j = 0; j < ncols; j++) {
+                mat.setValueAt(i, j, data[i][j] + constant);
+            }
+        }
+        return mat;
+    }
 }

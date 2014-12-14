@@ -77,6 +77,11 @@ let rec string_of_expr_javagen = function
 			| MIAdd  ->  "("^string_of_expr_javagen e1^").addByConstant("^string_of_expr_javagen e2^")"
 			| MISub  ->  "("^string_of_expr_javagen e1^").addByConstant(-1*("^string_of_expr_javagen e2^"))"
 			) 
+			(*unitary operation*)
+	| MatUnary_op(e, o) ->  
+		(match o with
+		MTranspose -> "MatrixMathematics.transpose" | MInversion -> "MatrixMathematics.inverse" | MDeterminant -> "MatrixMathematics.determinant"	
+		) ^ "(" ^ string_of_expr_javagen e ^ ")"
    (* assign codes *)   
   | VarAssign(v, e) -> v ^ " = " ^ string_of_expr_javagen e
 	| Matrix_element_assign (id,indexR,indexC,assignV)-> id^".data" ^"["^ string_of_expr_javagen indexR^"]["^ string_of_expr_javagen indexC^"] = "^string_of_expr_javagen assignV
@@ -130,7 +135,7 @@ let string_of_fdecl fdecl =
  "public static "^string_of_dataType fdecl.ret ^" " ^ fdecl.func_name ^ "(" 
 ^ String.concat ", " (List.map string_of_vdecl_argument fdecl.formals) ^ ")\n{\ntry{" ^
 	String.concat "" (List.map string_of_stmt fdecl.body) ^
-	(*exception simply exits*)
+	(* exception simply exits *)
   "}catch(Exception e){"^(match fdecl.ret with
 | Int -> "return -1"
 	| Float-> "return 0.0"
