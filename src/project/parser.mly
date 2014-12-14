@@ -70,13 +70,6 @@ formal:
 		tdecl      { $1 }
 	| MATRIX ID  { {vtype=Matrix; vname=$2}  }
 
-vdecl_list:
-    /* nothing */    { [] }
-  | vdecl_list vdecl { $2 :: $1 }
-
-vdecl:
-    tdecl SEMI { $1 }
-
 tdecl:
     INT ID { {vname = $2; vtype = Int}  }
 	| FLOAT ID  { {vname = $2; vtype = Float}  }
