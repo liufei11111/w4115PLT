@@ -1,12 +1,15 @@
 open Ast
 open Sast
 (****************************************** Debug Functions*)
+
 let print_var elem = print_endline (fst elem ^ "\t" ^ string_of_dataType (snd elem)^" is in scope")
 	
 let rec print_vars_list = function (*string*dataType list to print*)
 [] -> print_string "empty vars\n"
 | e::l -> print_var e ; print_vars_list l
-(**************************************Structure symbol table*)
+
+(**************************************Collection symbol table*)
+
 type struc_table = {
 	struc_name : string; (*name of a structure*)
 	mutable struc_fields : string list; (*keys within a structure*)
@@ -15,19 +18,33 @@ type option_table = {
 	option_name : string; (*name of a option*)
 	mutable option_fields : string list; (*keys within a option*)
 }
+type size_of_matrix = {
+		rows : int; (*number of rows*)
+		cols : int; (*number of cols*)
+}
+type matrix_table = {
+	matrix_name : string; (*name of a matrix*)
+	msize : size_of_matrix;
+}
+
 (**************************************** Symbol Tables *)
+
 type symbol_table = { (*general symbol table for variables*)
   parent : symbol_table option;
   mutable variables : (string * Ast.dataType) list;
 	mutable structs : struc_table list;
 	mutable options : option_table list;
+	mutable matrixes : matrix_table list;
 }
+
 type environment = {
   mutable func_return_type : Ast.dataType; (* Function return type *)
   scope : symbol_table;        (* symbol table for varibles *)
   mutable functions : (string * Ast.dataType list * Ast.dataType) list; (* symbol table for global functions, nested function declaration not supported*)
 }
-(****************************************** Initial*)
+
+(****************************************** Initial Functions*)
+
 let new_env : environment = 
   let core =[("toString", [String], String);("toString", [Int], String);
 						("toString", [Float], String);("toString", [Matrix], String);
@@ -36,15 +53,19 @@ let new_env : environment =
 						("print", [String], Void);("print", [Int], String);
 						("print", [Float], Void);("print", [Matrix], Void);
 						("print", [Structure], Void);("print", [Option], Void);
-						("print", [Boolean], Void);("toInt", [String], Int);] in 
-  let s = { variables = [];structs = []; options = []; parent = None }
+						("print", [Boolean], Void);("toInt", [String], Int);
+						("toFloat", [String], Float);("price", [Option], Float);
+						("toBoolean", [String], Boolean);] in (*built in functions*)
+  let s = { variables = [];structs = []; options = []; matrixes = []; parent = None }
   in
   {scope = s ; func_return_type = Void; functions = core;}
 	
 let inner_scope (env : environment) : environment =
-  let s = { variables = []; structs = []; options = []; parent = Some(env.scope) } in
+  let s = { variables = []; structs = []; options = [];matrixes = []; parent = Some(env.scope) } in
   { env with scope = s; }
+
 (****************************************** Utils*)
+
 let rec check_dup l = match l with
         [] -> false
       | (h::t) ->
@@ -79,9 +100,13 @@ let rec find_vars_exist (env_scope : symbol_table) (var_name : string) =
   			List.find (fun x->x.option_name = var_name) env_scope.options;
   			true
 			with Not_found ->
-        (match env_scope.parent with
-        | Some(p) -> find_vars_exist p var_name
-        | _ -> false)
+				try
+  				List.find (fun x->x.matrix_name = var_name) env_scope.matrixes;
+  				true
+				with Not_found ->
+	        (match env_scope.parent with
+	        | Some(p) -> find_vars_exist p var_name
+	        | _ -> false)
 
 let rec find_vars (env_scope : symbol_table) (var_name : string) : Ast.dataType= 
   try
@@ -96,10 +121,15 @@ let rec find_vars (env_scope : symbol_table) (var_name : string) : Ast.dataType=
   			List.find (fun x->x.option_name = var_name) env_scope.options;
   			Option
 			with Not_found ->
-        (match env_scope.parent with
-        | Some(p) -> find_vars p var_name
-        | _ -> raise(Failure("Cannot find variable named " ^ var_name) ))
+				try
+	  			List.find (fun x->x.matrix_name = var_name) env_scope.matrixes;
+	  			Matrix
+				with Not_found ->
+	        (match env_scope.parent with
+	        | Some(p) -> find_vars p var_name
+	        | _ -> raise(Failure("Cannot find variable named " ^ var_name) ))
 
+(*The below three functions return cooresponding dataType table instead of dataType or Boolean*)
 let rec find_structs (env_scope : symbol_table) (var_name : string) =
 	try 
 		let struct_find = List.find (fun x -> x.struc_name = var_name) env_scope.structs in
@@ -117,7 +147,16 @@ let rec find_options (env_scope : symbol_table) (var_name : string) =
 		match env_scope.parent with
         | Some(p) -> find_options p var_name
         | _ -> raise(Failure("Cannot find option named " ^ var_name) )		
-	
+
+let rec find_matrix (env_scope : symbol_table) (var_name : string) = 
+	try 
+		let matrix_find = List.find (fun x -> x.matrix_name = var_name) env_scope.matrixes in
+		matrix_find
+	with Not_found ->
+		match env_scope.parent with
+        | Some(p) -> find_matrix p var_name
+        | _ -> raise(Failure("Cannot find matrix named " ^ var_name) )
+
 let find_funcs_exist (env : environment) (var_name : string) = 
 	try
     List.find (fun (s, _, _) -> s = var_name) env.functions;
@@ -148,7 +187,26 @@ let get_type (e : Sast.expr_t): Ast.dataType =
 	| Struct_element_t(_,_,t)->t 
 	| Bool_lit_t(_,t)->t
   | Noexpr_t(t)->t
+let rec get_dimension (env: environment) (exp : Ast.expr) : size_of_matrix = 
+	match exp with
+	| Id(s) -> 
+		let m = find_matrix env.scope s in
+		m.msize
+	| MatBinary_op (e1, op, e2) -> get_dimension env e1
+	| VarAssign (s,e) -> let exp = Id(s) in get_dimension env exp
+	| Precedence_expr (e) -> get_dimension env e
+	| _ -> raise(Failure("Cannot find dimension which is not of matrix type"))
 
+let size_equal (size1 : size_of_matrix) (size2 : size_of_matrix) : bool =
+	if (size1.rows = size2.rows) && (size1.cols = size2.cols)
+		then true
+	else false
+		
+let size_mult_equal (size1 : size_of_matrix) (size2 : size_of_matrix) : bool =
+	if (size1.rows = size2.cols) && (size1.cols = size2.rows)
+		then true
+	else false
+		
 let get_formal_type (vardec : Ast.var_dec) : Ast.dataType  = vardec.vtype
 
 let addFormal (env: environment) (vardec : Ast.var_dec)  : unit= 
@@ -201,7 +259,19 @@ let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t =
 			| MTime | MDivide |MAdd | MSub ->
 				if (e1_t <> Matrix) || (e2_t <> Matrix)
 				then raise(Failure("Matrix operation has to be Matrix type on both sides"))
-				else MatBinary_op_t(e1_a, op, e2_a, Matrix)
+				else 
+					let sizel = get_dimension env e1 in
+					let sizer = get_dimension env e2 in
+					(match op with
+					| MAdd | MSub ->
+						if size_equal sizel sizer 
+							then MatBinary_op_t(e1_a, op, e2_a, Matrix)
+						else raise(Failure("Matrix addition or Matrix subtraction has incompitable sizes"))
+					| MTime | MDivide -> 
+						if size_mult_equal sizel sizer 
+							then MatBinary_op_t(e1_a, op, e2_a, Matrix)
+						else raise(Failure("Matrix addition or Matrix subtraction has incompitable sizes"))
+						)
 			| MITime | MIDivide |MIAdd | MISub ->
 				if (e1_t <> Matrix) || ((e2_t <> Int) && (e2_t <> Float))
 				then raise(Failure("MatrixElment operation has to be Matrix type on left side and Integer on the right side"))
