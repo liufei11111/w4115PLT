@@ -95,7 +95,8 @@ struct_arg:
   ID ASSIGN expr { {id = $1; value = $3} }
 
 struct_arg_list:
-		struct_arg	{ [$1] }
+    /* nothing */  { [] }
+	|	struct_arg	{ [$1] }
 	| struct_arg_list COMMA struct_arg {$3 :: $1}
 
 stmt:
