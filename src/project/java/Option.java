@@ -4,8 +4,11 @@ public class Option extends Structure {
     private static NormalDistribution d;
     public Option(){
         super();
+        d = new NormalDistribution(0, 1);
     }
-
+    public String toString(){
+        return super.toString()+"\nPrice: "+this.price()+"\n";
+    }
     public Option(double strike, double stock, double interestRate,
             double period, double sigma) {
         this.valMap.put("strike", "" + strike);
@@ -36,7 +39,7 @@ public class Option extends Structure {
     public double price() {
 
         double strike = Double.parseDouble(valMap.get("strike"));
-        double stock = Double.parseDouble(valMap.get("stoke"));
+        double stock = Double.parseDouble(valMap.get("stock"));
         double interestRate = Double.parseDouble(valMap.get("interestRate"));
         double period = Double.parseDouble(valMap.get("period"));
         double sigma = Double.parseDouble(valMap.get("sigma"));

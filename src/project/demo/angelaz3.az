@@ -1,0 +1,33 @@
+Float i;
+{*
+
+        this.valMap.put("strike", "" + strike);
+//        this.typeMap.put("strike", "double");
+
+        this.valMap.put("stock", "" + stock);
+//        this.typeMap.put("stock", "double");
+
+        this.valMap.put("interestRate", "" + interestRate);
+//        this.typeMap.put("interestRate", "double");
+
+        this.valMap.put("period", "" + period);
+//        this.typeMap.put("period", "double");
+
+        this.valMap.put("sigma", "" + sigma);
+//        this.typeMap.put("sigma", "double");
+
+        this.valMap.put("optionType", "call");
+*}
+Option main2(Int argc, String argv) {
+	Option s={strike="100.0", stock= "150.0", interestRate="0.1", period="1.0", sigma="2.0", optionType="call"};
+	i=toFloat(s -> strike);
+	return s;
+}
+
+Void main(Int argc2, String m) {
+	Option result={b="1"};
+	result=main2(0, "str");
+	Float d;
+	d=price(result);
+	print(d);
+}
