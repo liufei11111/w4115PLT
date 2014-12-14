@@ -50,6 +50,9 @@ rule token = parse
 | "true"  { TRUE }
 | "false"  { FALSE}
 | "Matrix" { MATRIX }
+| '''      { TRANSPOSE }
+| '~'      { INVERSION }
+| '^'      { DETERMINANT } 
 | "Structure" { STRUCTURE }
 | "Option" { OPTION }
 | "Int" {INT}

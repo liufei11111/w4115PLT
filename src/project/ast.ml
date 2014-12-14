@@ -22,6 +22,7 @@ type mat_dec = {
 
 type bin_op = Add | Sub | Times | Divide| And | Or | Eq | Neq | Lt | Gt | Leq | Geq
 type mat_op = MTime | MDivide |MAdd | MSub | MITime | MIDivide |MIAdd | MISub
+type mat_uop = MTranspose | MInversion | MDeterminant
 
 type expr =
 	 Binary_op of expr * bin_op * expr
@@ -43,6 +44,7 @@ type expr =
 	| Bool_expr2 of b_expr * bool_op2 * b_expr
 	| Precedence_bool_expr of b_expr*)
 	| Bool_lit of int
+	| MatUnary_op of expr * mat_uop
 	|	Noexpr
 
 type struct_arg = {
@@ -128,7 +130,11 @@ let rec string_of_expr = function
   | Noexpr -> "void"
 	| Precedence_expr(e) -> "( " ^ string_of_expr e ^ " )"
 	| Struct_element(struct_id, element_id) -> struct_id ^ "->" ^ element_id
-	| Bool_lit(b) -> match b with | 1 -> " 1 " | 0 -> " 0 "
+	| Bool_lit(b) -> (match b with | 1 -> " 1 " | 0 -> " 0 ")
+	| MatUnary_op(e, o) ->  
+		(match o with
+		MTranspose -> "Transpose" | MInversion -> "Inversion" | MDeterminant -> "Determinant"	
+		) ^ "(" ^ string_of_expr e ^ ")"
 	| _ -> "space"
 
 let string_of_struct_arg arg = arg.id ^ " = " ^ string_of_expr arg.value

@@ -5,6 +5,7 @@
 %token EQ NEQ LT LEQ GT GEQ AND OR
 %token RETURN IF ELSE FOR WHILE
 %token BOOLEAN TRUE FALSE MATRIX STRUCTURE OPTION INT FLOAT STRING VOID
+%token TRANSPOSE INVERSION DETERMINANT
 %token <int> INT_LIT
 %token <float> FLOAT_LIT
 %token <string> STRING_LIT
@@ -21,6 +22,7 @@
 %left PLUS MINUS MPLUS MMINUS MIPLUS MIMINUS
 %left TIMES DIVIDE MTIMES MDIVIDE MITIMES MIDIVIDE
 %left ARROW
+%nonassoc TRANSPOSE INVERSION DETERMINANT
 
 %start program
 %type <Ast.program> program
@@ -67,13 +69,6 @@ formal_list:
 formal:
 		tdecl      { $1 }
 	| MATRIX ID  { {vtype=Matrix; vname=$2}  }
-
-vdecl_list:
-    /* nothing */    { [] }
-  | vdecl_list vdecl { $2 :: $1 }
-
-vdecl:
-    tdecl SEMI { $1 }
 
 tdecl:
     INT ID { {vname = $2; vtype = Int}  }
@@ -153,6 +148,10 @@ expr:
   | expr GEQ    expr { Binary_op($1, Geq,   $3) }
 	| expr AND    expr { Binary_op($1, And,   $3) }
 	| expr OR     expr { Binary_op($1, Or,   $3) }
+/* matrix_unary: */
+	| expr TRANSPOSE   { MatUnary_op($1, MTranspose) }
+	| expr INVERSION   { MatUnary_op($1, MInversion) }
+	| expr DETERMINANT { MatUnary_op($1, MDeterminant) }
 
 
 actuals_opt:
