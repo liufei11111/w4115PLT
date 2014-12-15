@@ -19,6 +19,7 @@ type expr_t =
   | Precedence_expr_t of expr_t * dataType
 	| Struct_element_t of string * string * dataType
 	| Bool_lit_t of int * dataType
+	| MatUnary_op_t of expr * mat_uop * dataType
   | Noexpr_t of dataType
 
 type stmt_t =

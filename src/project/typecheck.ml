@@ -196,6 +196,12 @@ let rec get_dimension (env: environment) (exp : Ast.expr) : size_of_matrix =
 	| MatBinary_op (e1, op, e2) -> get_dimension env e1
 	| VarAssign (s,e) -> let exp = Id(s) in get_dimension env exp
 	| Precedence_expr (e) -> get_dimension env e
+	| MatUnary_op (e,op) -> 
+		let msize = get_dimension env e in
+		(match op with
+		| MTranspose -> {rows = msize.cols; cols = msize.rows}
+		| MInversion -> msize
+		| MDeterminant -> raise(Failure("Not of matrix type")))
 	| _ -> raise(Failure("Cannot find dimension which is not of matrix type"))
 
 let size_equal (size1 : size_of_matrix) (size2 : size_of_matrix) : bool =
@@ -297,6 +303,15 @@ let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t =
 	| Struct_element(s1,s2) -> check_struc_elem env s1 s2
 	| Matrix_element(s,me1,me2) -> check_matrix_elem env s me1 me2 
 	| Bool_lit(e1) -> Bool_lit_t(e1,Boolean)
+	| MatUnary_op(e,op) ->
+		 let e_a = annotate_expr env e in
+		 let e_t = get_type e_a in
+		 if e_t <> Matrix
+			then raise(Failure("Matrix uni-operation has to be applied to Matrix type"))
+		 else 
+			(match op with
+		| MTranspose | MInversion -> MatUnary_op_t(e,op,Matrix)
+		| MDeterminant -> MatUnary_op_t(e,op,Float))
   | _ -> Noexpr_t(Void)
 
 and check_matrix_elem (env : environment) (name:string)(e1:Ast.expr)(e2:Ast.expr) : Sast.expr_t = 
