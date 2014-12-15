@@ -65,7 +65,7 @@ let rec string_of_expr_javagen = function
 			| And -> "&&" | Or -> "||" 
       ) ^ " " ^
       string_of_expr_javagen e2
-			(*matrix binary operations*)
+	 (*matrix binary operations*)
 	| MatBinary_op(e1, o, e2) ->
       (match o with
 			MAdd -> "MatrixMathematics.add("^string_of_expr_javagen e1^" ,"^string_of_expr_javagen e2^")" 
@@ -77,7 +77,7 @@ let rec string_of_expr_javagen = function
 			| MIAdd  ->  "("^string_of_expr_javagen e1^").addByConstant("^string_of_expr_javagen e2^")"
 			| MISub  ->  "("^string_of_expr_javagen e1^").addByConstant(-1*("^string_of_expr_javagen e2^"))"
 			) 
-			(*unitary operation*)
+	 (*unitary operation*)
 	| MatUnary_op(e, o) ->  
 		(match o with
 		MTranspose -> "MatrixMathematics.transpose" | MInversion -> "MatrixMathematics.inverse" | MDeterminant -> "MatrixMathematics.determinant"	
@@ -96,6 +96,7 @@ let rec string_of_expr_javagen = function
 		| "toString" -> "ToString.toString(" ^ String.concat ", " (List.map string_of_expr_javagen  el)^")"
 		| "print" -> "System.out.println(ToString.toString(" ^ String.concat ", " (List.map string_of_expr_javagen  el)^"))"
 		| "price" -> "(" ^ String.concat ", " (List.map string_of_expr_javagen  el)^").price()"
+		| "priceM" -> "Option.priceM(" ^ String.concat ", " (List.map string_of_expr_javagen  el)^")"
 		|_  ->  f^"(" ^ String.concat ", " (List.map string_of_expr_javagen el) ^ ")"
 		)
   | Noexpr -> "void"

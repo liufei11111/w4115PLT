@@ -12,29 +12,40 @@ public class Option extends Structure {
     public Option(double strike, double stock, double interestRate,
             double period, double sigma) {
         this.valMap.put("strike", "" + strike);
-//        this.typeMap.put("strike", "double");
-
         this.valMap.put("stock", "" + stock);
-//        this.typeMap.put("stock", "double");
-
         this.valMap.put("interestRate", "" + interestRate);
-//        this.typeMap.put("interestRate", "double");
-
         this.valMap.put("period", "" + period);
-//        this.typeMap.put("period", "double");
-
         this.valMap.put("sigma", "" + sigma);
-//        this.typeMap.put("sigma", "double");
-
         this.valMap.put("optionType", "call");
-//        this.typeMap.put("optionType", "String");
         d = new NormalDistribution(0, 1);
     }
-
+    public Option(double strike, double stock, double interestRate,
+            double period, double sigma,String type) {
+        this.valMap.put("strike", "" + strike);
+        this.valMap.put("stock", "" + stock);
+        this.valMap.put("interestRate", "" + interestRate);
+        this.valMap.put("period", "" + period);
+        this.valMap.put("sigma", "" + sigma);
+        this.valMap.put("optionType", type);
+        d = new NormalDistribution(0, 1);
+    }
     public void setValue(String type, String value, String propertyName) {
-//        this.typeMap.put(propertyName, type);
         this.valMap.put(propertyName, value);
     }
+public static Matrix priceM(Matrix strike, Matrix stock, Matrix interestRate, Matrix period, Matrix sigma){
+    int row=strike.getNrows();
+    int col=strike.getNcols();
+    Matrix result=new Matrix(row,col);
+    for (int i=0;i<row;++i){
+        for (int j=0;j<col;++j){
+            Option opt=new Option(strike.getValueAt(i, j)
+                    ,stock.getValueAt(i, j),interestRate.getValueAt(i, j),period.getValueAt(i, j),sigma.getValueAt(i, j));
+            double price=opt.price();
+            result.setValueAt(i, j, price);
+        }
+    }
+    return result;
+}
 
     public double price() {
 

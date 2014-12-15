@@ -7,11 +7,34 @@ Option main2(Int argc, String argv) {
 	i=toFloat(s -> strike);
 	return s;
 }
-
+Matrix main3(Int a) {
+	Matrix strike(1,2);
+	strike[0][0]=10;
+	strike[0][1]=20;
+	Matrix stock(1,2);
+	stock[0][0]=15;
+	stock[0][1]=25;
+	Matrix interestRate(1,2);
+	interestRate[0][0]=0.4;
+	interestRate[0][1]=0.1;
+	Matrix period(1,2);
+	period[0][0]=3;
+	period[0][1]=4;
+	Matrix sigma(1,2);
+	sigma[0][0]=0.1;
+	sigma[0][1]=0.2;
+	
+	Matrix s(0,0);
+	s= priceM(strike,stock,interestRate,period,sigma);
+	return s;
+}
 Void main(Int argc2, String m) {
 	Option result={};
 	result=main2(0, "str");
 	Float d;
 	d=price(result);
 	print(d);
+	Matrix result1(0,0);
+	result1=main3(0);
+	print(result1);
 }
