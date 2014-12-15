@@ -55,7 +55,8 @@ let new_env : environment =
 						("print", [Structure], Void);("print", [Option], Void);
 						("print", [Boolean], Void);("toInt", [String], Int);
 						("toFloat", [String], Float);("price", [Option], Float);
-						("toBoolean", [String], Boolean);] in (*built in functions*)
+						("toBoolean", [String], Boolean);
+						("priceM", [Matrix;Matrix;Matrix;Matrix;Matrix], Matrix);] in (*built in functions*)
   let s = { variables = [];structs = []; options = []; matrixes = []; parent = None }
   in
   {scope = s ; func_return_type = Void; functions = core;}
