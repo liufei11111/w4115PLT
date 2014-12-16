@@ -63,7 +63,8 @@ retval:
   | formal_list   { List.rev $1 }
 */
 formal_list:
-    formal                   { [$1] }
+    /* nothing */  { [] }
+  | formal                  { [$1] }
   | formal_list COMMA formal { $3 :: $1 }
 
 formal:
