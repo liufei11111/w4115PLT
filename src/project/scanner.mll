@@ -5,7 +5,7 @@ open Parser
 let digit = ['0'-'9']
 let frac = '.' digit*
 let exp = ['e' 'E'] ['-' '+']? digit+
-let float = digit* frac? exp?
+let float = ['-']? digit* frac? exp?
 
 rule token = parse
   [' ' '\t' '\r' '\n'] { token lexbuf } (* Whitespace *)
@@ -60,7 +60,7 @@ rule token = parse
 | "String" {STRING}
 | "Void" {VOID}
 (*| "to" { TO }*)
-| ['0'-'9']+ as lxm { INT_LIT(int_of_string lxm) }(*integer*)
+| ['-']?['0'-'9']+ as lxm { INT_LIT(int_of_string lxm) }(*integer*)
 | float    { FLOAT_LIT (float_of_string (Lexing.lexeme lexbuf)) }(*float*)
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }(*var name*)
 | '"' (([' '-'!' '#'-'[' ']'-'~'] | '\\' ['\\' '"' 'n' 'r' 't'])* as s) '"' 
