@@ -69,14 +69,14 @@ formal_list:
 
 formal:
 		tdecl      { $1 }
-	| MATRIX ID  { {vtype=Matrix; vname=$2}  }
+	| MATRIX ID  { {vname=$2; vtype=Matrix}  }
+	| OPTION ID  { {vname = $2; vtype = Option}  }
+	| STRUCTURE ID  { {vname = $2; vtype = Structure}  }
 
 tdecl:
     INT ID { {vname = $2; vtype = Int}  }
 	| FLOAT ID  { {vname = $2; vtype = Float}  }
 	| VOID ID  { {vname = $2; vtype = Void}  }
-	| OPTION ID  { {vname = $2; vtype = Option}  }
-	| STRUCTURE ID  { {vname = $2; vtype = Structure}  }
 	| BOOLEAN ID  { {vname = $2; vtype = Boolean}  }
 	| STRING ID  { {vname = $2; vtype = String}  }
 
