@@ -1,7 +1,7 @@
 {* option access *}
-Int main(Int argc, String argv)｛
+Int main(Int argc, String argv){
 String str;
 str = "str";
 Option o = { a=str, b="b"};
 o->a = o->b;
-｝
+}

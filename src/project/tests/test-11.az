@@ -1,7 +1,7 @@
 Matrix m1(1,2);
 Matrix m2(1,2); 
 Matrix m3(1,2);
-Int main(Int argc, String argv)｛
+Int main(Int argc, String argv){
 m1[1][1] = 2;
 Float a;
 a = m1[1][1];
@@ -11,4 +11,4 @@ m3 = m1 +. m2;
 m2 = m2 -. m3;
 m1 = m2 *. m3;
 m3 = m1 /. m2;
-｝
+}
