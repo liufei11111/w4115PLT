@@ -19,7 +19,7 @@ parser.ml parser.mli : parser.mly
 	ocamlyacc parser.mly
 
 %.cmo : %.ml
-	ocamlc -w -A -c $<
+	ocamlc -w  -A -c $<
 
 %.cmi : %.mli
 	ocamlc -w -A -c $<
