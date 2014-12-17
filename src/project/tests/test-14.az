@@ -5,6 +5,6 @@ String c;
 Matrix m(1,2);
 Option o = {};
 Structure s = {};
-Boolean b;
+Boolean boo;
 Void v;
 }

@@ -232,7 +232,7 @@ let addFormal (env: environment) (vardec : Ast.var_dec)  : unit=
 			())
 (****************************************** Annotate and Check*)
 let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t = 
-	print_endline (string_of_expr e);
+	(*print_endline (string_of_expr e);*)
   match e with 
   Binary_op(e1, op, e2) -> 
 		let e1_a = annotate_expr env e1 in
@@ -422,8 +422,15 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
       let be_a = 
         (match be with
         | Binary_op(_,_,_) -> annotate_expr env be
+				| Id(s) -> 
+					let ret_type = find_vars env.scope s in
+					if ret_type <> Boolean 
+						then raise(Failure("condition expression within For loop is not a correct type"))
+					else
+						annotate_expr env be
+				| Bool_lit(_) -> annotate_expr env be
         | Noexpr -> Noexpr_t(Void)
-				| _ -> raise((Failure("condition expression within For loop is not required")))) in
+				| _ -> raise((Failure("condition expression within For loop is not a correct type")))) in
       let ae2_a = 
         (match ae2 with
         | VarAssign(s, e2) -> let exp = Id(s) in annotate_assign env exp e2
