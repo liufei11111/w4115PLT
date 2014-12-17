@@ -3,8 +3,8 @@ Int a;
 Float b;
 String c;
 Matrix m(1,2);
-Option o;
-Structure s;
+Option o = {};
+Structure s = {};
 Boolean b;
 Void v;
 }

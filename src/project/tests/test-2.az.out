@@ -1,20 +1,19 @@
-stmts:
+static int i=0;
 
-int i;
-i = 2;
-bool b;
-b = True;
+static boolean b=false;
 
-fdecls:
-
-int main(int argc, string argv)
+public static int main(int argc, String argv)
 {
-Structure s = {a = 1, b = 2, c = 3};
-matrix m(1, 1);
-m3 = ( m +. m2 ) * 4;
-Option o = {a = 1};
-o->a;
-argc = s->a;
+try{Structure s = new Structure();
+s.valMap.put("a" , 1);
+ s.valMap.put("b" , 2);
+ s.valMap.put("c" , 3);
+Matrix m= new Matrix(1, 1);
+m3 = ( MatrixMathematics.add(m ,m2) ) * 4;
+Option  o = new Option();
+o.valMap.put("a" , 1);
+o.valMap.get("a");
+argc = s.valMap.get("a");
 if (i == 2 || i) {
   return argc;
 }
@@ -25,11 +24,10 @@ while (i >= 2 || ( i < 100 && i != 3 )) argv = "argv";
 for (i = 0 ; i < 5 ; i = i + 1) {
   i = i * ( 5 + i );
 }
-}
+}catch(Exception e){return -1;}}
 
-void main2(int argc2, matrix m)
+public static void main2(int argc2, Matrix m)
 {
-main(a, "str");
-}
-
+try{main(a, "str");
+}catch(Exception e){return ;}}
 

@@ -1,17 +1,15 @@
-stmts:
 
-int a;
+public static int main(int argc, String argv)
+{
+try{int a=0;
 a = 5;
-bool b1;
-bool b2;
-b1 = Ture;
-b2 = Talse;
+boolean b1=false;
+boolean b2=false;
+b1 = ture;
+b2 = space;
 while (a > 0) {
   a = a - 1;
 }
 while (b1 && b2) a = 10;
-
-fdecls:
-
-
+}catch(Exception e){return -1;}}
 

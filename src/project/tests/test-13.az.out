@@ -1,14 +1,12 @@
-stmts:
 
-string s;
+public static int main(int argc, String argv)
+{
+try{String s=null;
 s = " ";
 s = "";
 s = "asdf";
 s = "!@asf#$%^as325df34&*()1sfd";
 s = "as\\nasd";
 s = "asd\r";
-
-fdecls:
-
-
+}catch(Exception e){return -1;}}
 

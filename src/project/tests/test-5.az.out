@@ -1,8 +1,6 @@
-stmts:
+static int a=0;
 
-int a;
-
-fdecls:
-
-
+public static int main(int argc, String argv)
+{
+try{}catch(Exception e){return -1;}}
 

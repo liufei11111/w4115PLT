@@ -1,15 +1,15 @@
-stmts:
 
-int a;
-float b;
-string c;
-matrix m(1, 2);
-option o;
-structure s;
-bool b;
+public static int main(int argc, String argv)
+{
+try{int a=0;
+double b=0.0;
+String c=null;
+Matrix m= new Matrix(1, 2);
+Option  o = new Option();
+;
+Structure s = new Structure();
+;
+boolean b=false;
 void v;
-
-fdecls:
-
-
+}catch(Exception e){return -1;}}
 

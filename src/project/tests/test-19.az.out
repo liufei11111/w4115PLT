@@ -1,11 +1,12 @@
-stmts:
 
-string str;
+public static int main(int argc, String argv)
+{
+try{String str=null;
 str = "str";
-Option o = {a = str, b = "b"};
-o->a = o->b;
-
-fdecls:
-
-
+Option  o = new Option();
+o.valMap.put("a" , str);
+ o.valMap.put("b" , "b");
+o.valMap.put("a",o.valMap.get("b"));
+;
+}catch(Exception e){return -1;}}
 

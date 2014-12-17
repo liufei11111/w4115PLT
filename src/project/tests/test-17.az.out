@@ -1,11 +1,12 @@
-stmts:
 
-string str;
+public static int main(int argc, String argv)
+{
+try{String str=null;
 str = "str";
-Structure s = {a = str, b = "b"};
-s->a = s->b;
-
-fdecls:
-
-
+Structure s = new Structure();
+s.valMap.put("a" , str);
+ s.valMap.put("b" , "b");
+s.valMap.put("a",s.valMap.get("b"));
+;
+}catch(Exception e){return -1;}}
 

@@ -40,6 +40,8 @@ if (a != b)
 
 Boolean b1;
 Boolean b2;
+b1 = true;
+b2 = false;
 if (b1)
 	c = 1;
 if (b1 && b2)
