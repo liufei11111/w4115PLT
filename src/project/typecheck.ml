@@ -187,6 +187,7 @@ let get_type (e : Sast.expr_t): Ast.dataType =
   | Precedence_expr_t(_,t)->t 
 	| Struct_element_t(_,_,t)->t 
 	| Bool_lit_t(_,t)->t
+	| MatUnary_op_t(_,_,t) ->t
   | Noexpr_t(t)->t
 let rec get_dimension (env: environment) (exp : Ast.expr) : size_of_matrix = 
 	match exp with
