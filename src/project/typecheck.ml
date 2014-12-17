@@ -241,7 +241,7 @@ let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t =
 			let e1_t = get_type e1_a in
 			let e2_t = get_type e2_a in 
 			(match op with
-			| Add | Sub | Times | Divide ->
+			| Add ->
 				(match e1_t with
 				| Float -> 
 					if (e2_t = Float) || (e2_t = Int)
@@ -252,10 +252,22 @@ let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t =
 					| Int -> Binary_op_t(e1_a, op, e2_a, Int)
 					| Float -> Binary_op_t(e1_a, op, e2_a, Float)
 					| _ -> raise(Failure("Binary operation has un-consistent types")))
-				| _ -> 
-					if e1_t = e2_t
+				| String -> 
+					if  e2_t = String
 					then Binary_op_t(e1_a, op, e2_a, e1_t)
-					else raise(Failure("Binary operation has un-consistent types")))
+					else raise(Failure("Binary operation has un-support types")))
+			| Sub | Times | Divide ->
+				(match e1_t with
+				| Float -> 
+					if (e2_t = Float) || (e2_t = Int)
+					then Binary_op_t(e1_a, op, e2_a, Float)
+					else raise(Failure("Binary operation has un-consistent types"))
+				| Int ->
+					(match e2_t with
+					| Int -> Binary_op_t(e1_a, op, e2_a, Int)
+					| Float -> Binary_op_t(e1_a, op, e2_a, Float)
+					| _ -> raise(Failure("Binary operation has un-consistent types")))
+				| _ ->  raise(Failure("Binary operation has unvalid types")))
 			| And | Or   ->
 				if (e1_t<>Boolean) || (e2_t<>Boolean)
 					then raise(Failure("Boolean should be the types around boolean operations"))
@@ -494,6 +506,9 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
               if exist_v 
                 then raise(Failure("Variable name " ^ var_name ^ "  already been used."))
               else 
+								if (md.mrow < 1) ||  (md.mcol < 1)
+									then raise(Failure("Invalid number of rows or cols for Mat declare."))
+								else
 								( env.scope.matrixes <-{matrix_name = var_name; msize = {rows = md.mrow; cols = md.mcol}} :: env.scope.matrixes;
                 Matdec_t(md, var_type))
 		| Structdec(var_name,starglist) ->
