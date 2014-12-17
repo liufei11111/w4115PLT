@@ -16,7 +16,7 @@ type size_of_matrix = {
 }
 type matrix_table = {
 	matrix_name : string; (*name of a matrix*)
-	msize : size_of_matrix;
+	msize : size_of_matrix; (*size of a matrix*)
 }
 
 (**************************************** Symbol Tables *)
