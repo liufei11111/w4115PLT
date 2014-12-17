@@ -19,8 +19,7 @@ let _ =
   let program = Parser.program Scanner.token lexbuf in
   match action with
   Sast ->
-  		let result = Typecheck.check_program program in
-  		()
+  		Typecheck.check_program program 
   | Java ->
       let _ = Javagen.gen_program "Output" program in
       print_string "Success! Compiled to java/output.java\n"

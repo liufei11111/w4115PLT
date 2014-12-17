@@ -561,7 +561,7 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
                 Optiondec_t(var_name, starglist, Option))
 			
 and annotate_stmts  (env : environment) (stmts : Ast.stmt list) : Sast.stmt_t list =
-  List.map (fun x -> (print_string (string_of_stmt x);annotate_stmt env x)) stmts	
+  List.map (fun x -> ((*print_string (string_of_stmt x);*)annotate_stmt env x)) stmts	
 
 let annotate_global_stmts (env : environment) (stmts : Ast.stmt list) : Sast.stmt_t list = 
 	List.map (fun x -> 
