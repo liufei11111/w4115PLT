@@ -1,5 +1,5 @@
 
-(* pubCrawl compiler
+(* angelaZ compiler
 	1. give stdin to scanner, get tokens
 	2. give tokens to parser, get AST
 	3. give AST to analyzer, get semantic tree
@@ -22,6 +22,5 @@ let _ =
   		let result = Typecheck.check_program program in
   		()
   | Java ->
-      (*let ap = Analyzer.infer_prog program in*)
       let _ = Javagen.gen_program "Output" program in
       print_string "Success! Compiled to java/output.java\n"
