@@ -1,4 +1,6 @@
+Int main(Int argc, String argv){
 Int a;
 a = 2;
 Float f;
 f = a;
+}

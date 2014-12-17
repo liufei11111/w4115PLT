@@ -1,4 +1,6 @@
+Int main(Int argc, String argv){
 String s;
 s = "sdf";
 String s1;
 s1 = s-"asdf";
+}
