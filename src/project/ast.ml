@@ -36,13 +36,8 @@ type expr =
 	| Matrix_element_assign of string * expr * expr * expr
 	| Struct_element_assign of string * string * expr
 	| Matrix_element of string * expr * expr	(* IDENTIFIER LSQUARE expr RSQUARE LSQUARE expr RSQUARE*)
-	(*| MatrixCreate of expr * expr	(* dataType ID LBRACE expr COMMA expr RBRACE SEMICOLON*)	*)
 	| Precedence_expr of expr
 	| Struct_element of string * string
-	 (*type b_expr = 
-	| Bool_expr1 of expr * bool_op1 * expr
-	| Bool_expr2 of b_expr * bool_op2 * b_expr
-	| Precedence_bool_expr of b_expr*)
 	| Bool_lit of int
 	| MatUnary_op of expr * mat_uop
 	|	Noexpr
@@ -97,19 +92,9 @@ let rec string_of_expr = function
 	| Int_lit(l) -> string_of_int l
 	| String_lit(l) -> "\"" ^ l ^ "\""
   | Id(s) -> s
-	(*| MatrixCreate (a,b)-> " "^ "[ "^(string_of_expr a)^" , "^(string_of_expr b)^" ]\n"*)
-	(*|  | expr EQ     expr { Binary_op($1, Eq, $3) }
-  | expr NEQ    expr { Binary_op($1, Neq,   $3) }
-  | expr LT     expr { Binary_op($1, Lt,  $3) }
-  | expr LEQ    expr { Binary_op($1, Leq,   $3) }
-  | expr GT     expr { Binary_op($1, Gt,  $3) }
-  | expr GEQ    expr { Binary_op($1, Geq,   $3) }
-	| expr AND    expr { Binary_op($1, And,   $3) }
-	| expr OR     expr { Binary_op($1, Or,   $3) } *)
   | Binary_op(e1, o, e2) ->
       string_of_expr e1 ^ " " ^
       (match o with
-			| (*And | Or | Eq | Neq | Lt | Gt | Leq | Geq*)
 			Add -> "+" | Sub -> "-" | Times -> "*" | Divide -> "/" | Eq -> "=="
 			| Neq -> "!=" 			| Lt -> "<" | Leq -> "<=" | Gt -> ">" | Geq -> ">=" 
 			| And -> "&&" | Or -> "||" 
@@ -139,21 +124,6 @@ let rec string_of_expr = function
 
 let string_of_struct_arg arg = arg.id ^ " = " ^ string_of_expr arg.value
 
-(*let rec string_of_b_expr = function 
-	 Bool_expr1(e1, o, e2) ->
-      string_of_expr e1 ^ " " ^
-      (match o with
-			Eq -> "=="| Neq -> "!=" | Lt ->"<"| Gt ->">"| Leq -> "<="| Geq -> ">="
-      ) ^ " " ^
-      string_of_expr e2
-	| Bool_expr2 (e1, o, e2) ->
-      string_of_b_expr e1 ^ " " ^
-      (match o with
-			And -> "&&" | Or -> "||" 
-      ) ^ " " ^
-      string_of_b_expr e2
-	| Precedence_bool_expr(e) -> "( " ^ string_of_b_expr e ^ " )"
-*)
 let rec string_of_stmt = function
     Block(stmts) -> "{\n  " ^ String.concat "  " (List.map string_of_stmt stmts) ^ "}\n"
 	| Expr(expr) -> string_of_expr expr ^ ";\n"
