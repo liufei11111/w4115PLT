@@ -1,30 +1,15 @@
-OBJS = ast.cmo sast.cmo parser.cmo scanner.cmo typecheck.cmo javagen.cmo angelaZ.cmo  
+OBJS = ast.cmo sast.cmo parser.cmo scanner.cmo typecheck.cmo javagen.cmo angelaZ.cmo javagenTest.cmo angelaZTest.cmo 
 #calc.cmo 
+OBJS_TEST = ast.cmo sast.cmo parser.cmo scanner.cmo typecheck.cmo javagenTest.cmo angelaZTest.cmo 
 
-TESTS = arith1 arith2 arith3 arith4 \
-	fib \
-	for1 for2 \
-	func1 func2 func3 func4 func5 \
-	gcd \
-	global1 \
-	hello \
-	if1 if2	if3 if4 if5 \
-	ops1 \
-	var1 var2 var3 var4 \
-	stmts1 \
-	while1
-
-TARFILES = Makefile testall.sh scanner.mll parser.mly \
-	ast.ml bytecode.ml  compile.ml execute.ml calc.ml \
-	$(TESTS:%=tests/test-%.mc) \
-	$(TESTS:%=tests/test-%.out)
 angelaZ: $(OBJS)
 	ocamlc -g -o angelaZ $(OBJS)
 #calc : $(OBJS)
 #	ocamlc -o calc $(OBJS)
-
+angelaZTest: $(OBJS_TEST)
+	ocamlc -g -o angelaZTest $(OBJS_TEST)
 .PHONY : test
-test : calc testall.sh
+test : angelaZTest testall.sh
 	./testall.sh
 
 scanner.ml : scanner.mll
@@ -63,5 +48,7 @@ scanner.cmx: parser.cmx
 parser.cmi: ast.cmo 
 javagen.cmo : ast.cmo
 javagen.cmx : ast.cmx
-pc.cmo : scanner.cmo  parser.cmi javagen.cmo ast.cmo 
-pc.cmx : scanner.cmx  parser.cmx javagen.cmx ast.cmx 
+javagenTest.cmo : ast.cmo
+javagenTest.cmx : ast.cmx
+pc.cmo : scanner.cmo  parser.cmi javagen.cmo ast.cmo javagenTest.cmo 
+pc.cmx : scanner.cmx  parser.cmx javagen.cmx ast.cmx javagenTest.cmx
