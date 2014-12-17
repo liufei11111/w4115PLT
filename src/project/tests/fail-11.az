@@ -1,2 +1,4 @@
+Int main(Int argc, String argv){
 Boolean b;
 b = 0;
+}

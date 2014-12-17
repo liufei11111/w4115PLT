@@ -1,2 +1,4 @@
+Int main(Int argc, String argv){
 Option o = {a = "sdf"};
 o->a = 1;
+}
