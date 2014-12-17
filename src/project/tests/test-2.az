@@ -1,7 +1,6 @@
 Int i;
-i = 2;
 Boolean b;
-b = True;
+
 
 Int main(Int argc, String argv) {
 	Structure s = { a = 1, b = 2, c = 3 };

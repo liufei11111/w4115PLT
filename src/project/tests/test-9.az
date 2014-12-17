@@ -1,6 +1,7 @@
 Int a;
 Int b;
 Int c;
+Int main(Int argc, String argv)｛
 b = 2;
 a = 10;
 if (a > b){
@@ -45,3 +46,4 @@ if (b1 && b2)
 	c = 1;
 if (b1 || b2)
 	c = 1;
+｝

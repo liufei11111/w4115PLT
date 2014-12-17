@@ -1,3 +1,4 @@
+Int main(Int argc, String argv)｛
 Int a;
 Float b;
 String c;
@@ -6,3 +7,4 @@ Option o;
 Structure s;
 Boolean b;
 Void v;
+｝

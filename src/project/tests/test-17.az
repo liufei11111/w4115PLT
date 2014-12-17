@@ -1,6 +1,7 @@
 {* structure access *}
-
+Int main(Int argc, String argv)｛
 String str;
 str = "str";
 Structure s = { a=str, b="b"};
 s->a = s->b;
+｝

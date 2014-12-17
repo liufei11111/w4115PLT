@@ -1,10 +1,11 @@
 {* hello *}
 Int a;
 {**}
-
+Int main(Int argc, String argv)｛
 {*
 hello
 world
 
 
 *}
+｝
