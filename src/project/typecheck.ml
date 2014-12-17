@@ -232,6 +232,7 @@ let addFormal (env: environment) (vardec : Ast.var_dec)  : unit=
 			())
 (****************************************** Annotate and Check*)
 let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t = 
+	print_endline (string_of_expr e);
   match e with 
   Binary_op(e1, op, e2) -> 
 		let e1_a = annotate_expr env e1 in
@@ -255,10 +256,14 @@ let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t =
 					if e1_t = e2_t
 					then Binary_op_t(e1_a, op, e2_a, e1_t)
 					else raise(Failure("Binary operation has un-consistent types")))
-			| And | Or | Eq | Neq | Lt | Gt | Leq | Geq ->
+			| And | Or   ->
 				if (e1_t<>Boolean) || (e2_t<>Boolean)
 					then raise(Failure("Boolean should be the types around boolean operations"))
 				else Binary_op_t(e1_a, op, e2_a, e1_t)
+			| Eq | Neq | Lt | Gt | Leq | Geq ->
+				if (e1_t<>e2_t)
+					then raise(Failure("Comparasion can only happen between same type."))
+				else Binary_op_t(e1_a, op, e2_a, Boolean)
 				)
   | MatBinary_op(e1, op, e2) ->
 		let e1_a = annotate_expr env e1 in
