@@ -1,7 +1,7 @@
-Int main(Int argc, String argv)｛
+Int main(Int argc, String argv){
 Int asdf;
 Int ASDF;
 Int A0a9;
 Int asdf____;
 Int asdf_ASDF;
-｝
+}

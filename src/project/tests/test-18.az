@@ -1,9 +1,9 @@
 {* option declaration *}
-Int main(Int argc, String argv)｛
+Int main(Int argc, String argv){
 Option o2 = { a="" };
 Option o3 = { a="a" };
 String str;
 str = "str";
 Option o4 = { a=str };
 Option o5 = { a=str, b = "b"};
-｝
+}

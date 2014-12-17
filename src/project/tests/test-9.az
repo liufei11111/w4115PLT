@@ -1,7 +1,7 @@
 Int a;
 Int b;
 Int c;
-Int main(Int argc, String argv)｛
+Int main(Int argc, String argv){
 b = 2;
 a = 10;
 if (a > b){
@@ -40,10 +40,12 @@ if (a != b)
 
 Boolean b1;
 Boolean b2;
+b1 = true;
+b2 = false;
 if (b1)
 	c = 1;
 if (b1 && b2)
 	c = 1;
 if (b1 || b2)
 	c = 1;
-｝
+}

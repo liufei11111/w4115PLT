@@ -1,10 +1,10 @@
-Int main(Int argc, String argv)｛
+Int main(Int argc, String argv){
 Int a;
 Float b;
 String c;
 Matrix m(1,2);
-Option o;
-Structure s;
+Option o = {};
+Structure s = {};
 Boolean b;
 Void v;
-｝
+}

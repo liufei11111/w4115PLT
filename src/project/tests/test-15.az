@@ -1,4 +1,4 @@
-Int main(Int argc, String argv)｛
+Int main(Int argc, String argv){
 Int a;
 a = 5;
 Boolean b1;
@@ -12,4 +12,4 @@ while (a > 0){
 
 while (b1 && b2)
 	a = 10;
-｝
+}

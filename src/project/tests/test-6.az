@@ -1,7 +1,7 @@
 Float f1;
 Float f2;
 Float f3;
-Int main(Int argc, String argv)｛
+Int main(Int argc, String argv){
 f1 = 1;
 f1 = 0.2;
 f1 = 1e10;
@@ -33,5 +33,5 @@ f1 = 1.5 / f2;
 f1 = f2 / 9e10;
 f1 = 9e10 / 5E2;
 f1 = 9e10 / 1.6;
-｝
+}
 

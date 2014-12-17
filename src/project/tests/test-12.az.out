@@ -1,11 +1,12 @@
-stmts:
 
-int a;
-int b;
-int c;
-bool b1;
-bool b2;
-bool b3;
+public static int main(int argc, String argv)
+{
+try{int a=0;
+int b=0;
+int c=0;
+boolean b1=false;
+boolean b2=false;
+boolean b3=false;
 a = 2;
 b = 1;
 c = ( a + b ) * 3;
@@ -14,12 +15,9 @@ c = 2 * ( a + b );
 c = a + ( 1 + a );
 c = ( 1 + a ) * ( 1 + b );
 c = ( a + b );
-b1 = True;
-b2 = False;
+b1 = space;
+b2 = space;
 b3 = b1 && ( b1 || b2 );
 b3 = ( b1 && b1 && b1 );
-
-fdecls:
-
-
+}catch(Exception e){return -1;}}
 

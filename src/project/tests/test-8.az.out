@@ -1,12 +1,10 @@
-stmts:
 
-int asdf;
-int ASDF;
-int A0a9;
-int asdf____;
-int asdf_ASDF;
-
-fdecls:
-
-
+public static int main(int argc, String argv)
+{
+try{int asdf=0;
+int ASDF=0;
+int A0a9=0;
+int asdf____=0;
+int asdf_ASDF=0;
+}catch(Exception e){return -1;}}
 

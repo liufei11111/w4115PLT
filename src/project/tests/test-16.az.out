@@ -1,13 +1,16 @@
-stmts:
 
-Structure s2 = {a = ""};
-Structure s3 = {a = "a"};
-string str;
+public static int main(int argc, String argv)
+{
+try{Structure s2 = new Structure();
+s2.valMap.put("a" , "");
+Structure s3 = new Structure();
+s3.valMap.put("a" , "a");
+String str=null;
 str = "str";
-Structure s4 = {a = str};
-Structure s5 = {a = str, b = "b"};
-
-fdecls:
-
-
+Structure s4 = new Structure();
+s4.valMap.put("a" , str);
+Structure s5 = new Structure();
+s5.valMap.put("a" , str);
+ s5.valMap.put("b" , "b");
+}catch(Exception e){return -1;}}
 

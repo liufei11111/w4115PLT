@@ -1,9 +1,12 @@
-stmts:
+static int a=0;
 
-int a;
-int b;
-int c;
-b = 2;
+static int b=0;
+
+static int c=0;
+
+public static int main(int argc, String argv)
+{
+try{b = 2;
 a = 10;
 if (a > b) {
   c = 1;
@@ -38,8 +41,10 @@ else {
 if (a != b) c = 1;
 else {
   }
-bool b1;
-bool b2;
+boolean b1=false;
+boolean b2=false;
+b1 = space;
+b2 = space;
 if (b1) c = 1;
 else {
   }
@@ -49,8 +54,5 @@ else {
 if (b1 || b2) c = 1;
 else {
   }
-
-fdecls:
-
-
+}catch(Exception e){return -1;}}
 
