@@ -1,30 +1,26 @@
 
 public class Output
 {
-static double i=0.0;
+static int i=0;
 
-public static Option main2(int argc, String argv)
+static boolean b=false;
+
+public static Structure main2(int argc, String argv)
 {
-try{Option  s = new Option();
-s.valMap.put("strike" , "100.0");
- s.valMap.put("stock" , "150.0");
- s.valMap.put("interestRate" , "0.1");
- s.valMap.put("period" , "1.0");
- s.valMap.put("sigma" , "2.0");
- s.valMap.put("optionType" , "call");
-i = Double.parseDouble(s.valMap.get("strike"));
+try{Structure s = new Structure();
+s.valMap.put("a" , "1");
+ s.valMap.put("b" , ToString.toString(argc));
+i = Integer.parseInt(s.valMap.get("a"));
 return s;
-}catch(Exception e){e.printStackTrace();return null;}}
+}catch(Exception e){return null;}}
 
 public static void main(int argc2, String m)
 {
-try{Option  result = new Option();
-result.valMap.put("b" , "1");
+try{Structure result = new Structure();
+;
 result = main2(0, "str");
-double d=0.0;
-d = (result).price();
-System.out.println(ToString.toString(d));
-}catch(Exception e){e.printStackTrace();return ;}}
+System.out.println(ToString.toString(result));
+}catch(Exception e){return ;}}
 
 public static void main(String[] args){ try{main(0,"");}catch(Exception e){return ;}}
 }

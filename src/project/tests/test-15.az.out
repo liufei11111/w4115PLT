@@ -5,7 +5,7 @@ try{int a=0;
 a = 5;
 boolean b1=false;
 boolean b2=false;
-b1 = ture;
+b1 = space;
 b2 = space;
 while (a > 0) {
   a = a - 1;

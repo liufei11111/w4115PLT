@@ -1,6 +1,6 @@
 #!/bin/sh
 
-MICROC="./angelaZ"
+MICROC="./angelaZTest"
 
 # Set time limit for all operations
 ulimit -t 30

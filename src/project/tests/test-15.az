@@ -3,8 +3,8 @@ Int a;
 a = 5;
 Boolean b1;
 Boolean b2;
-b1 = Ture;
-b2 = Talse;
+b1 = true;
+b2 = false;
 
 while (a > 0){
 	a = a - 1;
