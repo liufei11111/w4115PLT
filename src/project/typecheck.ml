@@ -1,13 +1,5 @@
 open Ast
 open Sast
-(****************************************** Debug Functions*)
-
-let print_var elem = print_endline (fst elem ^ "\t" ^ string_of_dataType (snd elem)^" is in scope")
-	
-let rec print_vars_list = function (*string*dataType list to print*)
-[] -> print_string "empty vars\n"
-| e::l -> print_var e ; print_vars_list l
-
 (**************************************Collection symbol table*)
 
 type struc_table = {
@@ -42,7 +34,17 @@ type environment = {
   scope : symbol_table;        (* symbol table for varibles *)
   mutable functions : (string * Ast.dataType list * Ast.dataType) list; (* symbol table for global functions, nested function declaration not supported*)
 }
+(****************************************** Debug Functions*)
 
+let print_var elem = print_endline (fst elem ^ "\t" ^ string_of_dataType (snd elem)^" is in scope")
+	
+let rec print_vars_list = function (*string*dataType list to print*)
+[] -> print_string "empty vars\n"
+| e::l -> print_var e ; print_vars_list l
+
+let rec print_mvars = function
+	[] -> print_endline "empty matrices"
+	|e::l -> print_endline e.matrix_name ; print_mvars l
 (****************************************** Initial Functions*)
 
 let new_env : environment = 
@@ -480,7 +482,7 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
               if exist_v 
                 then raise(Failure("Variable name " ^ var_name ^ "  already been used."))
               else 
-								( env.scope.variables<-env.scope.variables@[(var_name, var_type)];
+								( env.scope.matrixes <-{matrix_name = var_name; msize = {rows = md.mrow; cols = md.mcol}} :: env.scope.matrixes;
                 Matdec_t(md, var_type))
 		| Structdec(var_name,starglist) ->
 			if is_keyword var_name
