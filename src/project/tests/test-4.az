@@ -3,8 +3,8 @@ Boolean b2;
 Boolean b3;
 Boolean b4;
 Int main(Int argc, String argv){
-b1 = True;
-b2 = False;
+b1 = true;
+b2 = false;
 b3 = b1 && b2;
 b4 = b1 || b2;
 }

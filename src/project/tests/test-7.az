@@ -7,11 +7,11 @@ for (a = 0; a < 10; a = a +1 ){
 	b =1;
 }
 for (a = 0; a < 10; a = a +1 )
-	Int b;
+	Int c;
 
 for (a = 0; b1; a = a +1 ){
-	Int b;
-	b =1;
+	Int d;
+	d =1;
 }
 }
 

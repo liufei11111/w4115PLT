@@ -1,6 +1,6 @@
-Matrix m1(1,2);
-Matrix m2(1,2); 
-Matrix m3(1,2);
+Matrix m1(2,2);
+Matrix m2(2,2); 
+Matrix m3(2,2);
 Int main(Int argc, String argv){
 m1[1][1] = 2;
 Float a;

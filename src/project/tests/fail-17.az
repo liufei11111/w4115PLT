@@ -1,5 +1,5 @@
 Int main(Int argc, String argv){
 Int a;
 Int b;
-b = a+1;
+b = a+1.0;
 }

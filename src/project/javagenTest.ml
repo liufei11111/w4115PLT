@@ -1,8 +1,6 @@
 open Printf
 open Ast
-(**
-	Previous results
-**)
+(* data type string gen *)
 let string_of_dataType = function
 	  Int -> "int"
 	| Float -> "double"
@@ -12,16 +10,7 @@ let string_of_dataType = function
 	| Structure -> "Structure"
 	| Boolean -> "boolean"
 	| Void -> "void"
-
-			(*type dataType =
-	| Int 
-	| Float
-	| String
-	| Matrix
-	| Option
-	| Structure
-	| Boolean
-	| Void*)
+(* global variable string gen *)
 let string_of_vdecl vdecl =  string_of_dataType vdecl.vtype ^ " " ^ vdecl.vname ^ match vdecl.vtype with
 | Int -> "=0"
 	| Float-> "=0.0"
@@ -31,7 +20,7 @@ let string_of_vdecl vdecl =  string_of_dataType vdecl.vtype ^ " " ^ vdecl.vname 
 	| Structure -> ""
 	| Boolean -> "=false"
 	| Void  -> ""
-
+(* variable declaration string gen notice the static *)
 let string_of_global_vdecl vdecl =  "static "^string_of_dataType vdecl.vtype ^ " " ^ vdecl.vname ^ match vdecl.vtype with
 | Int -> "=0"
 	| Float-> "=0.0"
