@@ -1,4 +1,8 @@
 Int main(Int argc, String argv){
-Int a;
-a = "asf";
+	Structure s = { a = "sdf"};
+	foo(s);
+}
+
+void foo (Structure s){
+	print(s->b);
 }
