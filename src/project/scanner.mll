@@ -1,6 +1,6 @@
 { 
-open Lexing
-open Parser 
+	open Lexing
+	open Parser 
 }
 let digit = ['0'-'9']
 let frac = '.' digit*
@@ -9,28 +9,27 @@ let float = ['-']? digit* frac? exp?
 
 rule token = parse
   [' ' '\t' '\r' '\n'] { token lexbuf } (* Whitespace *)
-| "{*"     { comment lexbuf }           (* Comments *)
-| '('      { LPAREN }(*associative, initialization, ifelseforwhile*)
+| "{*"     { comment lexbuf } (* Comments *)
+| '('      { LPAREN } (* precedence, matrix initialization, ifelseforwhile *)
 | ')'      { RPAREN }
-| '{'      { LBRACE }(*block of statements*)
+| '{'      { LBRACE } (* block of statements *)
 | '}'      { RBRACE }
-| '['      { LSQUARE }(*index access*)
+| '['      { LSQUARE } (* matrix index access *)
 | ']'      { RSQUARE}
 | ';'      { SEMI }
-| ':'      { COLON }(*key:map*)
 | ','      { COMMA }
 | '+'      { PLUS }
-| "+."		 {MPLUS}
-| "+.."    {MIPLUS}
+| "+."		 { MPLUS } (* plus matrix and matirx *)
+| "+.."    { MIPLUS } (* plus matirx and int/float *)
 | '-'      { MINUS }
-| "-."			{MMINUS}
-| "-.."    {MIMINUS}
+| "-."		 { MMINUS }
+| "-.."    { MIMINUS }
 | '*'      { TIMES }
-| "*."      { MTIMES }
-| "*.."    {MITIMES}
+| "*."     { MTIMES }
+| "*.."    { MITIMES }
 | '/'      { DIVIDE }
-| "/."      { MDIVIDE }
-| "/.."      { MIDIVIDE }
+| "/."     { MDIVIDE }
+| "/.."    { MIDIVIDE }
 | '='      { ASSIGN }
 | "&&"     { AND }
 | "||"     { OR }
@@ -40,31 +39,30 @@ rule token = parse
 | "<="     { LEQ }
 | ">"      { GT }
 | ">="     { GEQ }
-| "->"      { ARROW }(*access struct element*)
+| "->"     { ARROW } (* access struct/option element *)
 | "if"     { IF }
 | "else"   { ELSE }
 | "for"    { FOR }
 | "while"  { WHILE }
 | "return" { RETURN }
-| "Boolean" { BOOLEAN }
-| "true"  { TRUE }
+| "Boolean"{ BOOLEAN }
+| "true"   { TRUE }
 | "false"  { FALSE}
-| "Matrix" { MATRIX }
-| '''      { TRANSPOSE }
+| "Matrix" { MATRIX } (* variable type Matrix *)
+| '''      { TRANSPOSE } (* option for Matrix *)
 | '~'      { INVERSION }
 | '^'      { DETERMINANT } 
-| "Structure" { STRUCTURE }
-| "Option" { OPTION }
-| "Int" {INT}
-| "Float" {FLOAT}
-| "String" {STRING}
-| "Void" {VOID}
-(*| "to" { TO }*)
-| ['-']?['0'-'9']+ as lxm { INT_LIT(int_of_string lxm) }(*integer*)
-| float    { FLOAT_LIT (float_of_string (Lexing.lexeme lexbuf)) }(*float*)
-| ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }(*var name*)
+| "Structure" { STRUCTURE } (* variable type Structure *)
+| "Option" { OPTION } (* variable type Option *)
+| "Int"    { INT }
+| "Float"  { FLOAT }
+| "String" { STRING }
+| "Void"   { VOID }
+| ['-']?['0'-'9']+ as lxm { INT_LIT(int_of_string lxm) } (* integer literal *)
+| float    { FLOAT_LIT (float_of_string (Lexing.lexeme lexbuf)) } (* float literal *)
+| ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) } (* id/function name *)
 | '"' (([' '-'!' '#'-'[' ']'-'~'] | '\\' ['\\' '"' 'n' 'r' 't'])* as s) '"' 
-                       { STRING_LIT(s) }(*string literal*)
+                       { STRING_LIT(s) } (* string literal *)
 | eof { EOF }
 | _  { raise (Failure("illegal character " )) }
 
