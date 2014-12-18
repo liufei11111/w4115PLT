@@ -1,6 +1,5 @@
 open Ast
 open Sast
-(*TODO Fill in with keywords*)
 (**************************************Collection symbol table*)
 
 type struc_table = {
@@ -83,7 +82,8 @@ let rec samelists l1 l2 = match l1, l2 with
 | x::xs, y::ys -> x = y && samelists xs ys
 
 let is_keyword (var_name:string) = 
-	let keyword_set = ["main";"void"] in
+	let keyword_set = ["main";"Void";"if";"else";"for";"while";"return";"true";"false";
+	"Int";"Float";"Matrix";"Structure";"Boolean";] in
 	try 
 		List.find (fun x -> x=var_name ) keyword_set;
 		true
@@ -171,7 +171,8 @@ let find_funcs (env : environment) (var_name : string) (arglist : Ast.dataType l
 																 s = var_name && samelists forlist arglist) env.functions in
     typ
   with Not_found -> raise(Failure("Cannot find function named " ^ var_name) )
-
+	
+(*get type of an expression*)
 let get_type (e : Sast.expr_t): Ast.dataType = 
   match e with 
    Binary_op_t(_,_,_,t) -> t
@@ -191,6 +192,7 @@ let get_type (e : Sast.expr_t): Ast.dataType =
 	| MatUnary_op_t(_,_,t) ->t
   | Noexpr_t(t)->t
 
+(*get dimension of matrix *)
 let rec get_dimension (env: environment) (exp : Ast.expr) : size_of_matrix = 
 	match exp with
 	| Id(s) -> 
@@ -207,11 +209,13 @@ let rec get_dimension (env: environment) (exp : Ast.expr) : size_of_matrix =
 		| MDeterminant -> raise(Failure("Not of matrix type")))
 	| _ -> raise(Failure("Cannot find dimension which is not of matrix type"))
 
+(*test matrix sizes are equal*)
 let size_equal (size1 : size_of_matrix) (size2 : size_of_matrix) : bool =
 	if (size1.rows = size2.rows) && (size1.cols = size2.cols)
 		then true
 	else false
 		
+(*test matrix sizes are transpose equal*)
 let size_mult_equal (size1 : size_of_matrix) (size2 : size_of_matrix) : bool =
 	if (size1.rows = size2.cols) && (size1.cols = size2.rows)
 		then true
@@ -219,36 +223,8 @@ let size_mult_equal (size1 : size_of_matrix) (size2 : size_of_matrix) : bool =
 		
 let get_formal_type (vardec : Ast.var_dec) : Ast.dataType  = vardec.vtype
 
-let addFormal (env: environment) (vardec : Ast.var_dec)  : unit= 
-	let v_name = vardec.vname in 
-	if is_keyword v_name
-	 then raise(Failure("Cannot use keyword " ^ v_name ^ " as function argument name"))
-	else
-		let exist_v = find_vars_exist env.scope v_name in (*Do not allow conflict with global variables*)
-		if exist_v
-			  then raise(Failure("Variable name " ^ v_name ^ " already been used."))
-		else 
-			(let v_type = vardec.vtype in
-				(match v_type with
-				| Int | Float| Boolean | String  ->
-						(env.scope.variables<-env.scope.variables@[(v_name,v_type)];
-						())
-				| Matrix ->
-					  (env.scope.matrixes<-{matrix_name = v_name; msize = {rows = 0; cols = 0;}}:: env.scope.matrixes;
-						())
-				| Option ->
-					(env.scope.options<-{option_name = v_name; option_fields = []}:: env.scope.options;
-						())
-				| Structure ->
-					(env.scope.structs<-{struc_name = v_name;struc_fields = [] }:: env.scope.structs;
-						())
-				| Void -> raise(Failure("Cannot use Void as function's argument"))
-				)
-			)
-		
 (****************************************** Annotate and Check*)
 let rec annotate_expr (env : environment) (e : Ast.expr) (func_ts : Sast.func_dec_t list): Sast.expr_t = 
-	(*print_endline (string_of_expr e);*)
   match e with 
   Binary_op(e1, op, e2) -> 
 		let e1_a = annotate_expr env e1 func_ts in
@@ -476,7 +452,7 @@ and annotate_stmt (env : environment) (s : Ast.stmt) (func_ts : Sast.func_dec_t 
           If_t(be_a, body1_a, body2_a)
     | For(ae1, be, ae2, body)->
       let ae1_a = 
-        (match ae1 with (*For other assign*)
+        (match ae1 with 
         | VarAssign(s, e2) -> let exp = Id(s) in annotate_assign env exp e2 func_ts
 				| Matrix_element_assign(s, e1, e2, e3) ->
 					let exp = Matrix_element(s, e1, e2) in annotate_assign env exp e3 func_ts
@@ -542,7 +518,6 @@ and annotate_stmt (env : environment) (s : Ast.stmt) (func_ts : Sast.func_dec_t 
             else 
 							(	
 								env.scope.variables <- env.scope.variables@[(var_name, var_type)];
-							(*	print_vars_list env.scope.variables;*)
               Vardec_t(vd, var_type))
     | Matdec(md) ->
       let var_type = md.mtype in
@@ -623,32 +598,12 @@ let annotate_global_stmts (env : environment) (stmts : Ast.stmt list) : Sast.stm
 		| _ -> raise(Failure("Global statements can only be variable declaration")))
 		) stmts	
 
-(*let annotate_func (env: environment) (func : Ast.func_dec) = 
-	let ret_type = func.ret in
-	let name = func.func_name in
-  	if is_keyword name && name <> "main"
-          then raise(Failure("Cannot use keyword " ^ name ^ " as function name"))
-    else 
-        let exist_f = find_funcs_exist env name
-            in
-              if exist_f 
-                then raise(Failure("Function name " ^ name ^ " already been used."))
-              else 
-								let inner_env = inner_scope env in
-								 inner_env.func_return_type <- ret_type;
-  							 let formals_list = func.formals in
-								  List.iter (fun x -> addFormal inner_env x) formals_list;
-								    let body_stmts = func.body in
-								      annotate_stmts inner_env body_stmts;
-								        let data_type_list = List.map (fun x-> get_formal_type x) formals_list in
-								          env.functions <- env.functions @ [(name,data_type_list,ret_type)]
-*)
 let insert_func (env: environment) (func : Ast.func_dec) = 
 	let ret_type = func.ret in
 	let name = func.func_name in
   	if is_keyword name && name <> "main"
           then raise(Failure("Cannot use keyword " ^ name ^ " as function name"))
-    else (*TODO checking about the main function's arguments*)
+    else 
         let exist_f = find_funcs_exist env name
             in
               if exist_f 
@@ -680,6 +635,7 @@ let check_from_main (env : environment) (func_ts : Sast.func_dec_t list) =
 		mainfunc.body_t <- annotate_stmts env mainbody func_ts;
 		print_endline "\nSemantic analysis completed successfully."
   with Not_found -> ()
+
 (****************************************** Checking Program and main function exists *)
 let check_program (stmts, funcs) = 
 	let globals = List.rev stmts in
