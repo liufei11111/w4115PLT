@@ -12,7 +12,7 @@ Matrix main2(Int argc, String argv) {
     return m3;
 }
 
-Void main(Int argc2, String m) {
+Void main(Int argc2, String ms) {
 	Matrix result(2,2);
 	result=main2(0, "str");
 	printM(result);
