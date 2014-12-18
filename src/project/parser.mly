@@ -1,5 +1,6 @@
 %{ open Ast %}
 
+/* token */
 %token SEMI COLON LPAREN RPAREN LSQUARE RSQUARE LBRACE RBRACE COMMA
 %token PLUS MINUS MPLUS MMINUS MIPLUS MIMINUS TIMES DIVIDE MTIMES MDIVIDE MITIMES MIDIVIDE ASSIGN ARROW
 %token EQ NEQ LT LEQ GT GEQ AND OR
@@ -12,6 +13,7 @@
 %token <string> ID
 %token EOF
 
+/* associativity, precedence */
 %nonassoc NOELSE
 %nonassoc ELSE COMMA
 %right ASSIGN
@@ -29,72 +31,70 @@
 
 %%
 
-/*
-program:
-  { {gvdecls=[]; gfdecls=[]} }
- | program vdecl { {gvdecls=($2 :: $1.gvdecls); gfdecls=$1.gfdecls} }
- | program fdecl { {gvdecls=$1.gvdecls; gfdecls=($2 :: $1.gfdecls)} }
-*/
+/* program consists of statements and function declarations */
 program:
    { [], [] }
  | program stmt {($2 :: fst $1), snd $1 }
  | program fdecl { fst $1, ($2 :: snd $1) }
 
+/* function declaration */
 fdecl:
    retval formal_list RPAREN LBRACE stmt_list RBRACE
      { { func_name =  $1.vname;
          formals = List.rev $2; 
          body = List.rev $5;
          ret =  $1.vtype
-         } }
+     } }
 
+/* return structure */
 retval:
-        INT ID LPAREN { {vtype=Int; vname=$2}  }
-        |FLOAT ID LPAREN { {vtype=Float;vname= $2}  }
-        |VOID ID LPAREN { {vtype=Void; vname=$2 } }
-				|MATRIX ID LPAREN { {vtype=Matrix; vname=$2}  }
-				| OPTION ID LPAREN { {vtype=Option;vname= $2}  }
-				| STRUCTURE ID LPAREN { {vtype=Structure;vname= $2}  }
-				| BOOLEAN ID LPAREN { {vtype=Boolean; vname=$2}  }
-				| STRING ID LPAREN { {vtype=String;vname= $2}  }
+		INT ID LPAREN  { { vtype=Int; vname=$2 } }
+	| FLOAT ID LPAREN { { vtype=Float; vname= $2 } }
+	| VOID ID LPAREN { { vtype=Void; vname=$2 } }
+	| MATRIX ID LPAREN { { vtype=Matrix; vname=$2 } }
+	| OPTION ID LPAREN { { vtype=Option; vname= $2 } }
+	| STRUCTURE ID LPAREN { { vtype=Structure; vname= $2 } }
+	| BOOLEAN ID LPAREN { { vtype=Boolean; vname=$2 } }
+	| STRING ID LPAREN { { vtype=String; vname= $2 } }
 
-/*formals_opt:
-     { [] }
-  | formal_list   { List.rev $1 }
-*/
 formal_list:
     /* nothing */  { [] }
   | formal                  { [$1] }
   | formal_list COMMA formal { $3 :: $1 }
 
+/* function arguments */
 formal:
 		tdecl      { $1 }
-	| MATRIX ID  { {vname=$2; vtype=Matrix}  }
-	| OPTION ID  { {vname = $2; vtype = Option}  }
-	| STRUCTURE ID  { {vname = $2; vtype = Structure}  }
+	| MATRIX ID  { { vname=$2; vtype=Matrix } }
+	| OPTION ID  { { vname = $2; vtype = Option } }
+	| STRUCTURE ID  { { vname = $2; vtype = Structure } }
 
+/* primitive variable type declaration */
 tdecl:
-    INT ID { {vname = $2; vtype = Int}  }
-	| FLOAT ID  { {vname = $2; vtype = Float}  }
-	| VOID ID  { {vname = $2; vtype = Void}  }
-	| BOOLEAN ID  { {vname = $2; vtype = Boolean}  }
-	| STRING ID  { {vname = $2; vtype = String}  }
+    INT ID { { vname = $2; vtype = Int } }
+	| FLOAT ID  { { vname = $2; vtype = Float } }
+	| VOID ID  { { vname = $2; vtype = Void } }
+	| BOOLEAN ID  { { vname = $2; vtype = Boolean } }
+	| STRING ID  { { vname = $2; vtype = String } }
 
+/* matrix declaration */
 mdecl:
-		MATRIX ID LPAREN INT_LIT COMMA INT_LIT RPAREN { {mname = $2; mtype = Matrix; mrow = $4; mcol = $6}  }	
+		MATRIX ID LPAREN INT_LIT COMMA INT_LIT RPAREN { { mname = $2; mtype = Matrix; mrow = $4; mcol = $6 }  }	
 
 stmt_list:
     /* nothing */  { [] }
   | stmt_list stmt { $2 :: $1 }
 
+/* structure/option field declaration */
 struct_arg:
-  ID ASSIGN expr { {id = $1; value = $3} }
+  ID ASSIGN expr { { id = $1; value = $3 } }
 
 struct_arg_list:
     /* nothing */  { [] }
 	|	struct_arg	{ [$1] }
-	| struct_arg_list COMMA struct_arg {$3 :: $1}
+	| struct_arg_list COMMA struct_arg { $3 :: $1 }
 
+/* statements */
 stmt:
     expr SEMI { Expr($1) }
   | RETURN expr SEMI { Return($2) }
@@ -114,6 +114,7 @@ expr_opt:
     /* nothing */ { Noexpr }
   | expr          { $1 }
 
+/* expressions */
 expr:
     INT_LIT          { Int_lit($1) }
 	| FLOAT_LIT 				{Float_lit($1)}
@@ -140,7 +141,7 @@ expr:
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { Precedence_expr($2) }
 	| ID ARROW ID {Struct_element($1, $3)}
-/* b_expr: */
+/* bool_expr: */
   | expr EQ     expr { Binary_op($1, Eq, $3) }
   | expr NEQ    expr { Binary_op($1, Neq,   $3) }
   | expr LT     expr { Binary_op($1, Lt,  $3) }
@@ -149,11 +150,10 @@ expr:
   | expr GEQ    expr { Binary_op($1, Geq,   $3) }
 	| expr AND    expr { Binary_op($1, And,   $3) }
 	| expr OR     expr { Binary_op($1, Or,   $3) }
-/* matrix_unary: */
+/* matrix_unary_option: */
 	| expr TRANSPOSE   { MatUnary_op($1, MTranspose) }
 	| expr INVERSION   { MatUnary_op($1, MInversion) }
 	| expr DETERMINANT { MatUnary_op($1, MDeterminant) }
-
 
 actuals_opt:
     /* nothing */ { [] }
