@@ -38,7 +38,8 @@ type func_dec_t = {
 	ret_t : dataType;
 	func_name_t : string;
 	formals_t : var_dec list;
-	body_t : stmt_t list;
+	mutable body_t : stmt_t list;
+	mutable ori_body : stmt list;
 }
 
 type program_t = stmt_t list * func_dec_t list

@@ -1,5 +1,6 @@
 open Ast
 open Sast
+(*TODO Fill in with keywords*)
 (**************************************Collection symbol table*)
 
 type struc_table = {
@@ -18,7 +19,6 @@ type matrix_table = {
 	matrix_name : string; (*name of a matrix*)
 	msize : size_of_matrix; (*size of a matrix*)
 }
-
 (**************************************** Symbol Tables *)
 
 type symbol_table = { (*general symbol table for variables*)
@@ -35,7 +35,6 @@ type environment = {
   mutable functions : (string * Ast.dataType list * Ast.dataType) list; (* symbol table for global functions, nested function declaration not supported*)
 }
 (****************************************** Debug Functions*)
-
 let print_var elem = print_endline (fst elem ^ "\t" ^ string_of_dataType (snd elem)^" is in scope")
 	
 let rec print_vars_list = function (*string*dataType list to print*)
@@ -140,7 +139,7 @@ let rec find_structs (env_scope : symbol_table) (var_name : string) =
 	with Not_found ->
 		match env_scope.parent with
         | Some(p) -> find_structs p var_name
-        | _ -> raise(Failure("Cannot find option named " ^ var_name) )	
+        | _ -> raise(Failure("Cannot find strucure named " ^ var_name) )	
 
 let rec find_options (env_scope : symbol_table) (var_name : string) =
 	try 
@@ -191,6 +190,7 @@ let get_type (e : Sast.expr_t): Ast.dataType =
 	| Bool_lit_t(_,t)->t
 	| MatUnary_op_t(_,_,t) ->t
   | Noexpr_t(t)->t
+
 let rec get_dimension (env: environment) (exp : Ast.expr) : size_of_matrix = 
 	match exp with
 	| Id(s) -> 
@@ -222,21 +222,37 @@ let get_formal_type (vardec : Ast.var_dec) : Ast.dataType  = vardec.vtype
 let addFormal (env: environment) (vardec : Ast.var_dec)  : unit= 
 	let v_name = vardec.vname in 
 	if is_keyword v_name
-	 then raise(Failure("Cannot use keyword " ^ v_name ^ " as variable name"))
+	 then raise(Failure("Cannot use keyword " ^ v_name ^ " as function argument name"))
 	else
-		let exist_v = find_vars_exist env.scope v_name in (*Should allow conflict with global variables*)
+		let exist_v = find_vars_exist env.scope v_name in (*Do not allow conflict with global variables*)
 		if exist_v
-		  then raise(Failure("Variable name " ^ v_name ^ " already been used."))
+			  then raise(Failure("Variable name " ^ v_name ^ " already been used."))
 		else 
-			(env.scope.variables<-env.scope.variables@[(v_name,vardec.vtype)];
-			())
+			(let v_type = vardec.vtype in
+				(match v_type with
+				| Int | Float| Boolean | String  ->
+						(env.scope.variables<-env.scope.variables@[(v_name,v_type)];
+						())
+				| Matrix ->
+					  (env.scope.matrixes<-{matrix_name = v_name; msize = {rows = 0; cols = 0;}}:: env.scope.matrixes;
+						())
+				| Option ->
+					(env.scope.options<-{option_name = v_name; option_fields = []}:: env.scope.options;
+						())
+				| Structure ->
+					(env.scope.structs<-{struc_name = v_name;struc_fields = [] }:: env.scope.structs;
+						())
+				| Void -> raise(Failure("Cannot use Void as function's argument"))
+				)
+			)
+		
 (****************************************** Annotate and Check*)
-let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t = 
+let rec annotate_expr (env : environment) (e : Ast.expr) (func_ts : Sast.func_dec_t list): Sast.expr_t = 
 	(*print_endline (string_of_expr e);*)
   match e with 
   Binary_op(e1, op, e2) -> 
-		let e1_a = annotate_expr env e1 in
-		let e2_a = annotate_expr env e2
+		let e1_a = annotate_expr env e1 func_ts in
+		let e2_a = annotate_expr env e2 func_ts
 		in
 			let e1_t = get_type e1_a in
 			let e2_t = get_type e2_a in 
@@ -278,8 +294,8 @@ let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t =
 				else Binary_op_t(e1_a, op, e2_a, Boolean)
 				)
   | MatBinary_op(e1, op, e2) ->
-		let e1_a = annotate_expr env e1 in
-		let e2_a = annotate_expr env e2 in
+		let e1_a = annotate_expr env e1 func_ts in
+		let e2_a = annotate_expr env e2 func_ts in
 			let e1_t = get_type e1_a in
 			let e2_t = get_type e2_a in
 			(match op with
@@ -309,22 +325,59 @@ let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t =
   | Float_lit(f) ->Float_lit_t(f,Float)
   | Int_lit(i) ->Int_lit_t(i,Int)
   | String_lit(s) ->String_lit_t(s,String)
-  | Call(name, exl)->
-      let exl_a = List.map (fun x -> annotate_expr env x) exl in
-			let arglist = List.map (fun x -> get_type x) exl_a in
-      let ret_type = find_funcs env name arglist in
+  | Call(name, exl)-> (
+		  let exl_a = List.map (fun x -> annotate_expr env x func_ts) exl in
+		  let arglist = List.map (fun x -> get_type x) exl_a in
+			let ret_type = find_funcs env name arglist in (*Check whether this func exist*)
+			try 
+				let func_dec_t = List.find (fun x -> x.func_name_t = name) func_ts in
+				(*Check for arguments and added to environment*)
+				let formals = func_dec_t.formals_t in
+				let arg_size  = List.length exl in
+				let inner_env = inner_scope env in
+				inner_env.func_return_type <- ret_type;
+				for i = 0 to arg_size-1 do
+				  let formal = List.nth formals i in
+					let arg = List.nth exl i in
+					(match formal.vtype with
+					| Int | Float | Boolean | String ->
+						inner_env.scope.variables <- [(formal.vname, formal.vtype)]@inner_env.scope.variables
+					| Matrix ->
+						(match arg with
+						| Id(sn) -> 
+							let mat_to_func = find_matrix env.scope sn in
+							inner_env.scope.matrixes <- {mat_to_func with matrix_name = sn} :: inner_env.scope.matrixes
+						| _ -> raise(Failure("Cannot pass this variable")))					
+					| Structure ->
+						(match arg with
+						| Id(sn) -> 
+							let struct_to_func = find_structs env.scope sn in
+							inner_env.scope.structs <- {struct_to_func with struc_name = sn} :: inner_env.scope.structs
+						| _ -> raise(Failure("Cannot pass this variable")))
+					| Option -> 
+						(match arg with
+						| Id(sn) -> 
+							let option_to_func = find_options env.scope sn in
+							inner_env.scope.options <- {option_to_func with option_name = sn} :: inner_env.scope.options
+						| _ -> raise(Failure("Cannot pass this variable")))
+					)					
+				done;
+				let stmtlist = func_dec_t.ori_body in	
+				func_dec_t.body_t = annotate_stmts inner_env stmtlist func_ts;
 				Call_t(name,exl_a,ret_type)
-  | VarAssign(s, e2)->  let exp = Id(s) in annotate_assign env exp e2
+		with Not_found ->Call_t(name,exl_a,ret_type) (*Must be built-in function*)		
+	)		
+  | VarAssign(s, e2)->  let exp = Id(s) in annotate_assign env exp e2 func_ts
 	| Matrix_element_assign(s, e1, e2, e3) ->
-		let exp = Matrix_element(s, e1, e2) in annotate_assign env exp e3
+		let exp = Matrix_element(s, e1, e2) in annotate_assign env exp e3 func_ts
 	| Struct_element_assign(s1, s2, e) ->
-	  let exp = Struct_element(s1, s2) in annotate_assign env exp e
-  | Precedence_expr(e) -> annotate_expr env e
+	  let exp = Struct_element(s1, s2) in annotate_assign env exp e func_ts
+  | Precedence_expr(e) -> annotate_expr env e func_ts 
 	| Struct_element(s1,s2) -> check_struc_elem env s1 s2
-	| Matrix_element(s,me1,me2) -> check_matrix_elem env s me1 me2 
+	| Matrix_element(s,me1,me2) -> check_matrix_elem env s me1 me2 func_ts
 	| Bool_lit(e1) -> Bool_lit_t(e1,Boolean)
 	| MatUnary_op(e,op) ->
-		 let e_a = annotate_expr env e in
+		 let e_a = annotate_expr env e func_ts in
 		 let e_t = get_type e_a in
 		 if e_t <> Matrix
 			then raise(Failure("Matrix uni-operation has to be applied to Matrix type"))
@@ -334,12 +387,12 @@ let rec annotate_expr (env : environment) (e : Ast.expr): Sast.expr_t =
 		| MDeterminant -> MatUnary_op_t(e,op,Float))
   | _ -> Noexpr_t(Void)
 
-and check_matrix_elem (env : environment) (name:string)(e1:Ast.expr)(e2:Ast.expr) : Sast.expr_t = 
+and check_matrix_elem (env : environment) (name:string)(e1:Ast.expr)(e2:Ast.expr)(func_ts : Sast.func_dec_t list) : Sast.expr_t = 
 	let var_type = find_vars env.scope name in
 	match var_type with
 	| Matrix -> 
-		let e1_a = annotate_expr env e1 in
-		let e2_a = annotate_expr env e2 in
+		let e1_a = annotate_expr env e1 func_ts in
+		let e2_a = annotate_expr env e2 func_ts in
 		let e1_typ = get_type e1_a in
 		let e2_typ = get_type e2_a in
 		 if (e1_typ<>Int)||(e2_typ<>Int)
@@ -364,8 +417,8 @@ and check_struc_elem (env:environment) (name:string)(key:string) : Sast.expr_t =
   	with Not_found -> raise(Failure("Field "^key^" does not exist within struct")))
 	| _ -> raise(Failure("Should be of Structure type for accessing fields"))
 
-and annotate_assign (env : environment) (e1 : Ast.expr) (e2 : Ast.expr) : Sast.expr_t =
-  let e2_a = annotate_expr env e2 in 
+and annotate_assign (env : environment) (e1 : Ast.expr) (e2 : Ast.expr)(func_ts : Sast.func_dec_t list) : Sast.expr_t =
+  let e2_a = annotate_expr env e2 func_ts in 
   match e1 with
   | Id(x) -> 
     let e2_type = get_type e2_a in
@@ -377,16 +430,16 @@ and annotate_assign (env : environment) (e1 : Ast.expr) (e2 : Ast.expr) : Sast.e
         else raise(Failure("variable "^x^" need to be float type"))
       | _ -> 
         if e2_type <> e1_type
-        then raise(Failure("variable "^x^" need to be assigned with same type"))
+        then raise(Failure("variable "^x^" need to be assigned with same type " ^ string_of_dataType e1_type ^ " " ^ string_of_dataType e2_type ))
         else VarAssign_t(Id_t(x, e1_type), e2_a, e2_type)
       )
 	| Matrix_element(s,me1,me2)->
-		let elem_t = check_matrix_elem env s me1 me2 in
+		let elem_t = check_matrix_elem env s me1 me2 func_ts in
 		let e2_type = get_type e2_a in
 		(match e2_type with
 		|Float|Int -> 
-			let me1_a = annotate_expr env me1 in 
-			let me2_a = annotate_expr env me2 in
+			let me1_a = annotate_expr env me1 func_ts in 
+			let me2_a = annotate_expr env me2 func_ts in
 			if (get_type me1_a = Int) && (get_type me2_a = Int)
 				then Matrix_element_assign_t(s, me1_a, me2_a, e2_a, Float)
 			else raise(Failure("Matrix indexing has to be of type int"))
@@ -401,73 +454,73 @@ and annotate_assign (env : environment) (e1 : Ast.expr) (e2 : Ast.expr) : Sast.e
 		)
   | _ -> raise(Failure("Assignment need to be applied to a variable"))
 
-let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t = 
+and annotate_stmt (env : environment) (s : Ast.stmt) (func_ts : Sast.func_dec_t list): Sast.stmt_t = 
   match s with 
     Block(stmtlist) ->
       let env_inner = inner_scope env
       in 
-        let stmt_t_list =  annotate_stmts env_inner stmtlist 
+        let stmt_t_list =  annotate_stmts env_inner stmtlist func_ts
         in
           Block_t(stmt_t_list)
     | Expr(e) -> 
-      let expr_a = annotate_expr env e
+      let expr_a = annotate_expr env e func_ts
       in
         Expr_t(expr_a)
     | If(be, body1, body2) ->
-      let be_a = annotate_expr env be in
+      let be_a = annotate_expr env be func_ts in
 				if (get_type be_a) <> Boolean
 					then raise(Failure("there should be boolean expression within If"))
 				else 
-        let body1_a = annotate_stmt env body1 in
-        let body2_a = annotate_stmt env body2 in
+        let body1_a = annotate_stmt env body1 func_ts in
+        let body2_a = annotate_stmt env body2 func_ts in
           If_t(be_a, body1_a, body2_a)
     | For(ae1, be, ae2, body)->
       let ae1_a = 
         (match ae1 with (*For other assign*)
-        | VarAssign(s, e2) -> let exp = Id(s) in annotate_assign env exp e2
+        | VarAssign(s, e2) -> let exp = Id(s) in annotate_assign env exp e2 func_ts
 				| Matrix_element_assign(s, e1, e2, e3) ->
-					let exp = Matrix_element(s, e1, e2) in annotate_assign env exp e3
+					let exp = Matrix_element(s, e1, e2) in annotate_assign env exp e3 func_ts
 				| Struct_element_assign(s1, s2, e) ->
-	  			let exp = Struct_element(s1, s2) in annotate_assign env exp e
+	  			let exp = Struct_element(s1, s2) in annotate_assign env exp e func_ts
         | Noexpr -> Noexpr_t(Void)
         | _ -> raise(Failure("Need assignment in for loop header"))) in
       let be_a = 
         (match be with
-        | Binary_op(_,_,_) -> annotate_expr env be
+        | Binary_op(_,_,_) -> annotate_expr env be func_ts
 				| Id(s) -> 
 					let ret_type = find_vars env.scope s in
 					if ret_type <> Boolean 
 						then raise(Failure("condition expression within For loop is not a correct type"))
 					else
-						annotate_expr env be
-				| Bool_lit(_) -> annotate_expr env be
+						annotate_expr env be func_ts
+				| Bool_lit(_) -> annotate_expr env be func_ts
         | Noexpr -> Noexpr_t(Void)
 				| _ -> raise((Failure("condition expression within For loop is not a correct type")))) in
       let ae2_a = 
         (match ae2 with
-        | VarAssign(s, e2) -> let exp = Id(s) in annotate_assign env exp e2
+        | VarAssign(s, e2) -> let exp = Id(s) in annotate_assign env exp e2 func_ts
 				| Matrix_element_assign(s, e1, e2, e3) ->
-					let exp = Matrix_element(s, e1, e2) in annotate_assign env exp e3
+					let exp = Matrix_element(s, e1, e2) in annotate_assign env exp e3 func_ts
 				| Struct_element_assign(s1, s2, e) ->
-	  			let exp = Struct_element(s1, s2) in annotate_assign env exp e
+	  			let exp = Struct_element(s1, s2) in annotate_assign env exp e func_ts
         | Noexpr -> Noexpr_t(Void)
 				| _ -> raise((Failure("there should be assign expression within for loop")))) in
-      let body_a = annotate_stmt env body 
+      let body_a = annotate_stmt env body func_ts
         in
 					if (get_type be_a<>Boolean) && (get_type be_a <> Void)
 						then raise(Failure("there should be boolean expression within For"))
 					else
           For_t(ae1_a, be_a, ae2_a, body_a)
     | While(be, body)  ->
-      let be_a = annotate_expr env be in
-      let body_a = annotate_stmt env body 
+      let be_a = annotate_expr env be func_ts in
+      let body_a = annotate_stmt env body func_ts
         in
 				  if (get_type be_a<>Boolean) && (get_type be_a <> Void)
 						then raise(Failure("there should be boolean expression within For"))
 					else
           While_t(be_a, body_a)       
     | Return(e) ->
-      let e_a = annotate_expr env e 
+      let e_a = annotate_expr env e func_ts
       in 
         let return_type = get_type e_a
         in
@@ -523,7 +576,7 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
 							(*Check whether filed names have duplicates and type are of string*)
 							let fields = List.map (fun x ->
 														let fid = x.id in
-														let fval = annotate_expr env x.value in
+														let fval = annotate_expr env x.value func_ts in
 														if get_type fval <> String
 															then raise(Failure("Only String can be assigned to filed of Structure"))
 														else fid ) starglist 
@@ -547,7 +600,7 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
 							(*Check whether filed names have duplicates and type are of string*)
 							let fields = List.map (fun x ->
 														let fid = x.id in
-														let fval = annotate_expr env x.value in
+														let fval = annotate_expr env x.value func_ts in
 														if get_type fval <> String
 															then raise(Failure("Only String can be assigned to filed of Structure"))
 														else fid ) starglist 
@@ -555,22 +608,22 @@ let rec annotate_stmt (env : environment) (s : Ast.stmt): Sast.stmt_t =
 							let dup = check_dup fields
 							in
 								if dup
-								  then raise(Failure("There are duplicate fields inside structure "^var_name))
+								  then raise(Failure("There are duplicate fields inside Option "^var_name))
 								else
 									( env.scope.options<-env.scope.options@[{option_name=var_name; option_fields=fields}];
                 Optiondec_t(var_name, starglist, Option))
 			
-and annotate_stmts  (env : environment) (stmts : Ast.stmt list) : Sast.stmt_t list =
-  List.map (fun x -> ((*print_string (string_of_stmt x);*)annotate_stmt env x)) stmts	
+and annotate_stmts  (env : environment) (stmts : Ast.stmt list) (func_ts : Sast.func_dec_t list): Sast.stmt_t list =
+  List.map (fun x -> (print_string (string_of_stmt x);annotate_stmt env x func_ts)) stmts	
 
 let annotate_global_stmts (env : environment) (stmts : Ast.stmt list) : Sast.stmt_t list = 
 	List.map (fun x -> 
 		(match x with
-		|Vardec(_)| Matdec(_)| Structdec(_,_)| Optiondec (_,_) -> (print_string (string_of_stmt x));annotate_stmt env x
+		|Vardec(_)| Matdec(_)| Structdec(_,_)| Optiondec (_,_) -> annotate_stmt env x []
 		| _ -> raise(Failure("Global statements can only be variable declaration")))
 		) stmts	
 
-let annotate_func (env: environment) (func : Ast.func_dec) = 
+(*let annotate_func (env: environment) (func : Ast.func_dec) = 
 	let ret_type = func.ret in
 	let name = func.func_name in
   	if is_keyword name && name <> "main"
@@ -589,19 +642,53 @@ let annotate_func (env: environment) (func : Ast.func_dec) =
 								      annotate_stmts inner_env body_stmts;
 								        let data_type_list = List.map (fun x-> get_formal_type x) formals_list in
 								          env.functions <- env.functions @ [(name,data_type_list,ret_type)]
+*)
+let insert_func (env: environment) (func : Ast.func_dec) = 
+	let ret_type = func.ret in
+	let name = func.func_name in
+  	if is_keyword name && name <> "main"
+          then raise(Failure("Cannot use keyword " ^ name ^ " as function name"))
+    else (*TODO checking about the main function's arguments*)
+        let exist_f = find_funcs_exist env name
+            in
+              if exist_f 
+                then raise(Failure("Function name " ^ name ^ " already been used."))
+              else 
+								let formals_list = func.formals in
+								let data_type_list = List.map (fun x-> get_formal_type x) formals_list in
+								env.functions <- env.functions @ [(name,data_type_list,ret_type)]
 
-let annotate_funcs  (env : environment) (funcs : Ast.func_dec list)(*: Sast.func_dec_t list*)  = 
+let annotate_func (env: environment) (func : Ast.func_dec) : Sast.func_dec_t = 
+		{ret_t = func.ret; func_name_t = func.func_name; formals_t = func.formals; body_t = []; ori_body = func.body}
+														
+let annotate_funcs  (env : environment) (funcs : Ast.func_dec list)  : Sast.func_dec_t list= 
+	List.iter (fun x -> insert_func env x) funcs;
 	List.map (fun x -> annotate_func env x) funcs
-	
+
+let check_from_main (env : environment) (func_ts : Sast.func_dec_t list) = 
+	try
+    let mainfunc = List.find (fun x -> x.func_name_t = "main") func_ts in
+		let formals = mainfunc.formals_t in
+		let size = List.length formals in
+		for i = 0 to size-1 do
+				  let formal = List.nth formals i in
+					print_endline (string_of_dataType formal.vtype);
+					env.scope.variables <- [(formal.vname, formal.vtype)]@env.scope.variables;
+					env.func_return_type <- Int
+		done;
+		let mainbody = mainfunc.ori_body in
+		mainfunc.body_t <- annotate_stmts env mainbody func_ts;
+		print_endline "\nSemantic analysis completed successfully."
+  with Not_found -> ()
 (****************************************** Checking Program and main function exists *)
 let check_program (stmts, funcs) = 
 	let globals = List.rev stmts in
 	let functions = List.rev funcs in
 	let env = new_env in
     annotate_global_stmts env globals;
-    annotate_funcs env functions;
+    let func_dec_t_list = annotate_funcs env functions in
 		let main_exist = find_funcs_exist env "main" in
 		if main_exist
-		  then print_endline "\nSemantic analysis completed successfully."
+		  then check_from_main env func_dec_t_list
 		else
 			raise(Failure("Must declare main function"))

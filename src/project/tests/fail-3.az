@@ -2,3 +2,5 @@ Int main(Int argc, String argv){
 Int a;
 a = 1.5;
 }
+
+{*Fatal error: exception Failure("variable a need to be assigned with same type int float")*}

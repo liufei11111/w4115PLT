@@ -24,7 +24,7 @@ Matrix main3(Int a) {
 	sigma[0][0]=0.1;
 	sigma[0][1]=0.2;
 	
-	Matrix s(0,0);
+	Matrix s(1,1);
 	s= priceM(strike,stock,interestRate,period,sigma);
 	return s;
 }
@@ -34,7 +34,7 @@ Void main(Int argc2, String m) {
 	Float d;
 	d=price(result);
 	print(d);
-	Matrix result1(0,0);
+	Matrix result1(1,1);
 	result1=main3(0);
 	print(result1);
 }

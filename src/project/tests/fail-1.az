@@ -3,6 +3,8 @@ Int main(Int argc, String argv){
 	foo(s);
 }
 
-void foo (Structure s){
+Void foo (Structure s){
 	print(s->b);
 }
+
+{*Fatal error: exception Failure("Field b does not exist within struct")*}

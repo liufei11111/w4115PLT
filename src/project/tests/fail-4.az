@@ -2,3 +2,5 @@ Int main(Int argc, String argv){
 Int a;
 a = asd;
 }
+
+{*Fatal error: exception Failure("Cannot find variable named asd")*}
