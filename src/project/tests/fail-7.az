@@ -1,3 +1,5 @@
 Int main(Int argc, String argv){
 a = true;
 }
+
+{*Fatal error: exception Failure("Cannot find variable named a")*}

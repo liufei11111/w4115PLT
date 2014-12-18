@@ -2,3 +2,5 @@ Int main(Int argc, String argv){
 Float a;
 a = "sasdf";
 }
+
+{*Fatal error: exception Failure("variable a need to be float type")*}
